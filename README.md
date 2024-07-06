@@ -1,7 +1,6 @@
 # gakuen-imas-localify
 
 - 学园偶像大师 本地化插件
-- **开发中**
 
 
 
