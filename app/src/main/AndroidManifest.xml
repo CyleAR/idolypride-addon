@@ -20,7 +20,7 @@
             android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="IDOLM@STER Gakuen localify" />
+            android:value="IDOLYPRIDE Addon" />
         <meta-data
             android:name="xposedminversion"
             android:value="53" />
@@ -30,7 +30,7 @@
 
         <meta-data
             android:name="xposedscope"
-            android:value="com.bandainamcoent.idolmaster_gakuen" />
+            android:value="com.neowiz.game.idolypride" />
 
         <activity
             android:name=".MainActivity"
