@@ -1,10 +1,10 @@
-#ifndef GAKUMAS_LOCALIFY_LOG_H
-#define GAKUMAS_LOCALIFY_LOG_H
+#ifndef IDOLYPRIDE_LOCALIFY_LOG_H
+#define IDOLYPRIDE_LOCALIFY_LOG_H
 
 #include <string>
 #include <jni.h>
 
-namespace GakumasLocal::Log {
+namespace IdolyprideLocal::Log {
     std::string StringFormat(const char* fmt, ...);
     void LogUnityLog(int prio, const char* fmt, ...);
     void LogFmt(int prio, const char* fmt, ...);
@@ -21,4 +21,4 @@ namespace GakumasLocal::Log {
     void ToastLoop(JNIEnv *env, jclass clazz);
 }
 
-#endif //GAKUMAS_LOCALIFY_LOG_H
+#endif //IDOLYPRIDE_LOCALIFY_LOG_H

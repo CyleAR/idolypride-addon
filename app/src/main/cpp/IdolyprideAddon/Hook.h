@@ -1,11 +1,11 @@
-#ifndef GAKUMAS_LOCALIFY_HOOK_H
-#define GAKUMAS_LOCALIFY_HOOK_H
+#ifndef IDOLYPRIDE_LOCALIFY_HOOK_H
+#define IDOLYPRIDE_LOCALIFY_HOOK_H
 
 #include <string>
 
-namespace GakumasLocal::Hook
+namespace IdolyprideLocal::Hook
 {
     void Install();
 }
 
-#endif //GAKUMAS_LOCALIFY_HOOK_H
+#endif //IDOLYPRIDE_LOCALIFY_HOOK_H

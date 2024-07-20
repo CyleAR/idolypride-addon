@@ -3,7 +3,7 @@ package io.github.cylear.idolypride.addon.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GakumasConfig (
+data class IdolyprideConfig (
     var dbgMode: Boolean = false,
     var enabled: Boolean = true,
     var replaceFont: Boolean = true,

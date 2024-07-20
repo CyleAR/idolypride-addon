@@ -31,7 +31,7 @@ import io.github.cylear.idolypride.addon.R
 import io.github.cylear.idolypride.addon.getConfigState
 import io.github.cylear.idolypride.addon.models.BreastCollapsibleBoxViewModel
 import io.github.cylear.idolypride.addon.models.BreastCollapsibleBoxViewModelFactory
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.ui.components.base.CollapsibleBox
 import io.github.cylear.idolypride.addon.ui.components.GakuButton
 import io.github.cylear.idolypride.addon.ui.components.GakuSwitch
@@ -41,7 +41,7 @@ import io.github.cylear.idolypride.addon.ui.components.GakuTextInput
 @Composable
 fun AdvanceSettingsPage(modifier: Modifier = Modifier,
              context: MainActivity? = null,
-             previewData: GakumasConfig? = null,
+             previewData: IdolyprideConfig? = null,
              bottomSpacerHeight: Dp = 120.dp,
              screenH: Dp = 1080.dp) {
     val config = getConfigState(context, previewData)
@@ -392,6 +392,6 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun AdvanceSettingsPagePreview(modifier: Modifier = Modifier, data: GakumasConfig = GakumasConfig()) {
+fun AdvanceSettingsPagePreview(modifier: Modifier = Modifier, data: IdolyprideConfig = IdolyprideConfig()) {
     AdvanceSettingsPage(modifier, previewData = data)
 }

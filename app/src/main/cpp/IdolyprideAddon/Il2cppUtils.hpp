@@ -4,7 +4,7 @@
 #include <memory>
 
 namespace Il2cppUtils {
-    using namespace GakumasLocal;
+    using namespace IdolyprideLocal;
 
     struct Il2CppClassHead {
         // The following fields are always valid for a Il2CppClass structure

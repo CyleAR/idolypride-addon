@@ -14,7 +14,7 @@
 #include "BaseDefine.h"
 
 
-namespace GakumasLocal::Local {
+namespace IdolyprideLocal::Local {
     std::unordered_map<std::string, std::string> i18nData{};
     std::unordered_map<std::string, std::string> i18nDumpData{};
     std::unordered_map<std::string, std::string> genericText{};

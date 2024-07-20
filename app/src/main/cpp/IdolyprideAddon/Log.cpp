@@ -7,7 +7,7 @@
 #include <queue>
 
 extern JavaVM* g_javaVM;
-extern jclass g_gakumasHookMainClass;
+extern jclass g_idolyprideHookMainClass;
 extern jmethodID showToastMethodId;
 
 #define GetParamStringResult(name)\
@@ -24,7 +24,7 @@ extern jmethodID showToastMethodId;
     delete[] buffer
 
 
-namespace GakumasLocal::Log {
+namespace IdolyprideLocal::Log {
     namespace {
         std::queue<std::string> showingToasts{};
     }
@@ -35,7 +35,7 @@ namespace GakumasLocal::Log {
     }
 
     void Log(int prio, const char* msg) {
-        __android_log_write(prio, "GakumasLocal-Native", msg);
+        __android_log_write(prio, "IdolyprideLocal-Native", msg);
     }
 
     void LogFmt(int prio, const char* fmt, ...) {
@@ -72,7 +72,7 @@ namespace GakumasLocal::Log {
 
     void LogUnityLog(int prio, const char* fmt, ...) {
         GetParamStringResult(result);
-        __android_log_write(prio, "GakumasLog", result.c_str());
+        __android_log_write(prio, "IdolyprideLog", result.c_str());
     }
 
     void ShowToastJNI(const char* text) {
@@ -84,7 +84,7 @@ namespace GakumasLocal::Log {
                 return;
             }
 
-            jclass& kotlinClass = g_gakumasHookMainClass;
+            jclass& kotlinClass = g_idolyprideHookMainClass;
             if (!kotlinClass) {
                 g_javaVM->DetachCurrentThread();
                 return;

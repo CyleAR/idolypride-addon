@@ -3,7 +3,7 @@ package io.github.cylear.idolypride.addon
 import android.view.KeyEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.models.ProgramConfig
 import io.github.cylear.idolypride.addon.models.ProgramConfigViewModel
 import io.github.cylear.idolypride.addon.models.ProgramConfigViewModelFactory
@@ -64,7 +64,7 @@ interface ConfigListener {
                                      errorString: String? = null)
 }
 
-class UserConfigViewModelFactory(private val initialValue: GakumasConfig) : ViewModelProvider.Factory {
+class UserConfigViewModelFactory(private val initialValue: IdolyprideConfig) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(UserConfigViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
@@ -74,9 +74,9 @@ class UserConfigViewModelFactory(private val initialValue: GakumasConfig) : View
     }
 }
 
-class UserConfigViewModel(initValue: GakumasConfig) : ViewModel() {
+class UserConfigViewModel(initValue: IdolyprideConfig) : ViewModel() {
     val configState = MutableStateFlow(initValue)
-    val config: StateFlow<GakumasConfig> = configState.asStateFlow()
+    val config: StateFlow<IdolyprideConfig> = configState.asStateFlow()
 }
 
 

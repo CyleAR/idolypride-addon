@@ -36,10 +36,10 @@ std::unordered_set<void*> hookedStubs{};
         }                                                                                          \
         else {                                                                                     \
             hookedStubs.emplace(stub);                                                             \
-            GakumasLocal::Log::InfoFmt("ADD_HOOK: %s at %p", #name, addr);                         \
+            IdolyprideLocal::Log::InfoFmt("ADD_HOOK: %s at %p", #name, addr);                         \
         }                                                                                          \
     }                                                                                              \
-    else GakumasLocal::Log::ErrorFmt("Hook failed: %s is NULL", #name, addr)
+    else IdolyprideLocal::Log::ErrorFmt("Hook failed: %s is NULL", #name, addr)
 
 void UnHookAll() {
     for (const auto i: hookedStubs) {
@@ -48,12 +48,12 @@ void UnHookAll() {
         {
             int error_num = shadowhook_get_errno();
             const char *error_msg = shadowhook_to_errmsg(error_num);
-            GakumasLocal::Log::ErrorFmt("unhook failed: %d - %s", error_num, error_msg);
+            IdolyprideLocal::Log::ErrorFmt("unhook failed: %d - %s", error_num, error_msg);
         }
     }
 }
 
-namespace GakumasLocal::HookMain {
+namespace IdolyprideLocal::HookMain {
     using Il2cppString = UnityResolve::UnityType::String;
 
     UnityResolve::UnityType::String* environment_get_stacktrace() {
@@ -164,7 +164,7 @@ namespace GakumasLocal::HookMain {
                             *value = cacheRotation;
                         }
                         else {
-                            static GakumasLocal::Misc::FixedSizeQueue<float> recordsY(60);
+                            static IdolyprideLocal::Misc::FixedSizeQueue<float> recordsY(60);
                             const auto newY = GKCamera::CheckNewY(cacheLookAt, true, recordsY);
                             UnityResolve::UnityType::Vector3 newCacheLookAt{cacheLookAt.x, newY, cacheLookAt.z};
                             lookat_injected(self, &newCacheLookAt, &worldUp);
@@ -969,7 +969,7 @@ namespace GakumasLocal::HookMain {
 }
 
 
-namespace GakumasLocal::Hook {
+namespace IdolyprideLocal::Hook {
     void Install() {
         const auto hookInstaller = Plugin::GetInstance().GetHookInstaller();
 

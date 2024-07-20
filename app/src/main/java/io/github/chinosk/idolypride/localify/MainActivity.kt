@@ -17,7 +17,7 @@ import io.github.cylear.idolypride.addon.hookUtils.FileHotUpdater
 import io.github.cylear.idolypride.addon.hookUtils.FilesChecker
 import io.github.cylear.idolypride.addon.hookUtils.MainKeyEventDispatcher
 import io.github.cylear.idolypride.addon.mainUtils.json
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.models.ProgramConfig
 import io.github.cylear.idolypride.addon.models.ProgramConfigViewModel
 import io.github.cylear.idolypride.addon.models.ProgramConfigViewModelFactory
@@ -30,7 +30,7 @@ import java.io.File
 
 
 class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableActivity<MainActivity> {
-    override lateinit var config: GakumasConfig
+    override lateinit var config: IdolyprideConfig
     override lateinit var programConfig: ProgramConfig
 
     override lateinit var factory: UserConfigViewModelFactory
@@ -132,7 +132,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
 
 
 @Composable
-fun getConfigState(context: MainActivity?, previewData: GakumasConfig?): State<GakumasConfig> {
+fun getConfigState(context: MainActivity?, previewData: IdolyprideConfig?): State<IdolyprideConfig> {
     return if (context != null) {
         context.viewModel.config.collectAsState()
     }

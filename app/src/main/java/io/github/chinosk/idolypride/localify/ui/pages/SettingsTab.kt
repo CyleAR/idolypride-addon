@@ -23,7 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.cylear.idolypride.addon.MainActivity
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.onClickStartGame
 import io.github.cylear.idolypride.addon.ui.components.GakuTabRow
 import io.github.cylear.idolypride.addon.ui.pages.subPages.AboutPage
@@ -36,7 +36,7 @@ import io.github.cylear.idolypride.addon.ui.pages.subPages.HomePage
 fun SettingsTabs(modifier: Modifier = Modifier,
                  titles: List<String>,
                  context: MainActivity? = null,
-                 previewData: GakumasConfig? = null,
+                 previewData: IdolyprideConfig? = null,
                  screenH: Dp = 1080.dp
 ) {
 
@@ -86,5 +86,5 @@ fun SettingsTabs(modifier: Modifier = Modifier,
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO, heightDp = 760)
 @Composable
 fun SettingTabsPreview(modifier: Modifier = Modifier) {
-    SettingsTabs(titles = listOf("TAB 1", "TAB 2", "TAB 3"), previewData = GakumasConfig())
+    SettingsTabs(titles = listOf("TAB 1", "TAB 2", "TAB 3"), previewData = IdolyprideConfig())
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace GakumasLocal::Config {
+namespace IdolyprideLocal::Config {
     extern bool isConfigInit;
 
     extern bool dbgMode;

@@ -1,7 +1,7 @@
 #include "Plugin.h"
 #include "Hook.h"
 
-namespace GakumasLocal {
+namespace IdolyprideLocal {
     HookInstaller::~HookInstaller() {
     }
 

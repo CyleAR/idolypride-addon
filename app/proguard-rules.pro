@@ -20,7 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class io.github.cylear.idolypride.addon.GakumasHookMain {
+-keep class io.github.cylear.idolypride.addon.idolyprideHookMain {
     <init>();
     native <methods>;
 }

@@ -5,7 +5,7 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import io.github.cylear.idolypride.addon.mainUtils.json
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.models.ProgramConfig
 import io.github.cylear.idolypride.addon.models.ProgramConfigSerializer
 import kotlinx.serialization.SerializationException
@@ -13,7 +13,7 @@ import java.io.File
 
 
 interface IHasConfigItems {
-    var config: GakumasConfig
+    var config: IdolyprideConfig
     var programConfig: ProgramConfig
 
     fun saveConfig() {}  // do nothing
@@ -61,10 +61,10 @@ fun <T> T.getProgramConfigContent(
 fun <T> T.loadConfig() where T : Activity, T : IHasConfigItems {
     val configStr = getConfigContent()
     config = try {
-        json.decodeFromString<GakumasConfig>(configStr)
+        json.decodeFromString<IdolyprideConfig>(configStr)
     } catch (e: SerializationException) {
         Toast.makeText(this, "配置文件异常: $e", Toast.LENGTH_SHORT).show()
-        GakumasConfig()
+        IdolyprideConfig()
     }
     saveConfig()
 

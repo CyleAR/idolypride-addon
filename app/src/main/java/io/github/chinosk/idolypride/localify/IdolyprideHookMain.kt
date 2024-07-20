@@ -23,7 +23,7 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.cylear.idolypride.addon.hookUtils.FilesChecker
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -38,7 +38,7 @@ import io.github.cylear.idolypride.addon.models.ProgramConfig
 
 val TAG = "IdolyprideAddon"
 
-class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
+class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private lateinit var modulePath: String
     private var nativeLibLoadSuccess: Boolean
     private var alreadyInitialized = false
@@ -222,7 +222,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         if (gkmsData != null) {
             gkmsDataInited = true
             val initConfig = try {
-                json.decodeFromString<GakumasConfig>(gkmsData)
+                json.decodeFromString<IdolyprideConfig>(gkmsData)
             }
             catch (e: Exception) {
                 null

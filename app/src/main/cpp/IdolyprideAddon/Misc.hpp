@@ -8,7 +8,7 @@
 #include <vector>
 
 
-namespace GakumasLocal {
+namespace IdolyprideLocal {
     using OpaqueFunctionPointer = void (*)();
 
     namespace Misc {

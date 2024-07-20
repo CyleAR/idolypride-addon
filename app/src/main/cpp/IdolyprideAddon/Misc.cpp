@@ -8,7 +8,7 @@
 extern JavaVM* g_javaVM;
 
 
-namespace GakumasLocal::Misc {
+namespace IdolyprideLocal::Misc {
     std::u16string ToUTF16(const std::string_view& str) {
         std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
         return utf16conv.from_bytes(str.data(), str.data() + str.size());

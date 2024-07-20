@@ -1,10 +1,10 @@
-#ifndef GAKUMAS_LOCALIFY_LOCAL_H
-#define GAKUMAS_LOCALIFY_LOCAL_H
+#ifndef IDOLYPRIDE_LOCALIFY_LOCAL_H
+#define IDOLYPRIDE_LOCALIFY_LOCAL_H
 
 #include <string>
 #include <filesystem>
 
-namespace GakumasLocal::Local {
+namespace IdolyprideLocal::Local {
     std::filesystem::path GetBasePath();
     void LoadData();
     bool GetI18n(const std::string& key, std::string* ret);
@@ -16,4 +16,4 @@ namespace GakumasLocal::Local {
     std::string OnKeyDown(int message, int key);
 }
 
-#endif //GAKUMAS_LOCALIFY_LOCAL_H
+#endif //IDOLYPRIDE_LOCALIFY_LOCAL_H

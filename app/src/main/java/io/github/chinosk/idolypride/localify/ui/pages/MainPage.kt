@@ -28,13 +28,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.cylear.idolypride.addon.MainActivity
 import io.github.cylear.idolypride.addon.R
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.ui.theme.IdolyprideAddonTheme
 
 
 @Composable
 fun MainUI(modifier: Modifier = Modifier, context: MainActivity? = null,
-           previewData: GakumasConfig? = null) {
+           previewData: IdolyprideConfig? = null) {
     val imagePainter = painterResource(R.drawable.bg_pattern)
     val versionInfo = remember {
         context?.getVersion() ?: listOf("", "Unknown")
@@ -59,7 +59,7 @@ fun MainUI(modifier: Modifier = Modifier, context: MainActivity? = null,
                 .padding(10.dp, 10.dp, 10.dp, 0.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            Text(text = "Gakumas Localify ${versionInfo[0]}", fontSize = 18.sp)
+            Text(text = "Idolypride Localify ${versionInfo[0]}", fontSize = 18.sp)
             Text(text = "Assets version: ${versionInfo[1]}", fontSize = 13.sp)
 
             SettingsTabs(modifier, listOf(stringResource(R.string.about), stringResource(R.string.home),
@@ -104,7 +104,7 @@ fun imageRepeater(
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO, widthDp = 380)
 @Composable
 fun MainUIPreview(modifier: Modifier = Modifier) {
-    val previewConfig = GakumasConfig()
+    val previewConfig = IdolyprideConfig()
     previewConfig.enabled = true
 
     IdolyprideAddonTheme {

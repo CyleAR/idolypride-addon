@@ -2,7 +2,7 @@
 #include "nlohmann/json.hpp"
 #include "../Log.h"
 
-namespace GakumasLocal::Config {
+namespace IdolyprideLocal::Config {
     bool isConfigInit = false;
 
     bool dbgMode = false;

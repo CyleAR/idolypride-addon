@@ -8,7 +8,7 @@ data class AboutPageConfig(
     val main_contributors: List<MainContributors> = listOf(),
     val contrib_img: ContribImg = ContribImg(
         "https://contrib.rocks/image?repo=chinosk6/gakuen-imas-localify",
-        "https://contrib.rocks/image?repo=chinosk6/GakumasTranslationData"
+        "https://contrib.rocks/image?repo=chinosk6/IdolyprideTranslationData"
     )
 )
 

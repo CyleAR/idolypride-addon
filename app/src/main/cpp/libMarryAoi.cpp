@@ -12,12 +12,12 @@
 #include "Joystick/JoystickEvent.h"
 
 JavaVM* g_javaVM = nullptr;
-jclass g_gakumasHookMainClass = nullptr;
+jclass g_idolyprideHookMainClass = nullptr;
 jmethodID showToastMethodId = nullptr;
 
 namespace
 {
-    class AndroidHookInstaller : public GakumasLocal::HookInstaller
+    class AndroidHookInstaller : public IdolyprideLocal::HookInstaller
     {
     public:
         explicit AndroidHookInstaller(const std::string& il2cppLibraryPath, const std::string& localizationFilesDir)
@@ -36,9 +36,9 @@ namespace
             return shadowhook_hook_func_addr(addr, hook, orig);
         }
 
-        GakumasLocal::OpaqueFunctionPointer LookupSymbol(const char* name) override
+        IdolyprideLocal::OpaqueFunctionPointer LookupSymbol(const char* name) override
         {
-            return reinterpret_cast<GakumasLocal::OpaqueFunctionPointer>(xdl_sym(m_Il2CppLibrary, name, NULL));
+            return reinterpret_cast<IdolyprideLocal::OpaqueFunctionPointer>(xdl_sym(m_Il2CppLibrary, name, NULL));
         }
 
     private:
@@ -55,9 +55,9 @@ JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_gakumas_localify_GakumasHookMain_initHook(JNIEnv *env, jclass clazz, jstring targetLibraryPath,
+Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_initHook(JNIEnv *env, jclass clazz, jstring targetLibraryPath,
                                                                  jstring localizationFilesDir) {
-    g_gakumasHookMainClass = clazz;
+    g_idolyprideHookMainClass = clazz;
     showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
 
     const auto targetLibraryPathChars = env->GetStringUTFChars(targetLibraryPath, nullptr);
@@ -66,17 +66,17 @@ Java_io_github_chinosk_gakumas_localify_GakumasHookMain_initHook(JNIEnv *env, jc
     const auto localizationFilesDirChars = env->GetStringUTFChars(localizationFilesDir, nullptr);
     const std::string localizationFilesDirCharsStr = localizationFilesDirChars;
 
-    auto& plugin = GakumasLocal::Plugin::GetInstance();
+    auto& plugin = IdolyprideLocal::Plugin::GetInstance();
     plugin.InstallHook(std::make_unique<AndroidHookInstaller>(targetLibraryPathStr, localizationFilesDirCharsStr));
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_gakumas_localify_GakumasHookMain_keyboardEvent(JNIEnv *env, jclass clazz, jint key_code, jint action) {
+Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_keyboardEvent(JNIEnv *env, jclass clazz, jint key_code, jint action) {
     GKCamera::on_cam_rawinput_keyboard(action, key_code);
-    const auto msg = GakumasLocal::Local::OnKeyDown(action, key_code);
+    const auto msg = IdolyprideLocal::Local::OnKeyDown(action, key_code);
     if (!msg.empty()) {
-        g_gakumasHookMainClass = clazz;
+        g_idolyprideHookMainClass = clazz;
         showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
 
         if (env && clazz && showToastMethodId) {
@@ -90,7 +90,7 @@ Java_io_github_chinosk_gakumas_localify_GakumasHookMain_keyboardEvent(JNIEnv *en
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_gakumas_localify_GakumasHookMain_joystickEvent(JNIEnv *env, jclass clazz,
+Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_joystickEvent(JNIEnv *env, jclass clazz,
                                                                       jint action,
                                                                       jfloat leftStickX,
                                                                       jfloat leftStickY,
@@ -106,16 +106,16 @@ Java_io_github_chinosk_gakumas_localify_GakumasHookMain_joystickEvent(JNIEnv *en
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_gakumas_localify_GakumasHookMain_loadConfig(JNIEnv *env, jclass clazz,
+Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_loadConfig(JNIEnv *env, jclass clazz,
                                                                    jstring config_json_str) {
     const auto configJsonStrChars = env->GetStringUTFChars(config_json_str, nullptr);
     const std::string configJson = configJsonStrChars;
-    GakumasLocal::Config::LoadConfig(configJson);
+    IdolyprideLocal::Config::LoadConfig(configJson);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_gakumas_localify_GakumasHookMain_pluginCallbackLooper(JNIEnv *env,
+Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_pluginCallbackLooper(JNIEnv *env,
                                                                              jclass clazz) {
-    GakumasLocal::Log::ToastLoop(env, clazz);
+    IdolyprideLocal::Log::ToastLoop(env, clazz);
 }

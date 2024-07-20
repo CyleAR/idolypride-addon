@@ -1,12 +1,12 @@
-#ifndef GAKUMAS_LOCALIFY_PLUGIN_H
-#define GAKUMAS_LOCALIFY_PLUGIN_H
+#ifndef IDOLYPRIDE_LOCALIFY_PLUGIN_H
+#define IDOLYPRIDE_LOCALIFY_PLUGIN_H
 
 #include "Misc.hpp"
 #include <string>
 #include <memory>
 #include <jni.h>
 
-namespace GakumasLocal {
+namespace IdolyprideLocal {
     struct HookInstaller
     {
         virtual ~HookInstaller();
@@ -37,4 +37,4 @@ namespace GakumasLocal {
 
 }
 
-#endif //GAKUMAS_LOCALIFY_PLUGIN_H
+#endif //IDOLYPRIDE_LOCALIFY_PLUGIN_H

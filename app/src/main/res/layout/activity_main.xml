@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
-        <variable name="config" type="io.github.cylear.idolypride.addon.models.GakumasConfig" />
+        <variable name="config" type="io.github.cylear.idolypride.addon.models.IdolyprideConfig" />
         <variable
             name="listener"
             type="io.github.cylear.idolypride.addon.ConfigListener" />
@@ -44,7 +44,7 @@
                         android:id="@+id/textViewTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/gakumas_localify"
+                        android:text="@string/idolypride_localify"
                         android:textColor="@color/black"
                         android:textSize="20sp" />
 

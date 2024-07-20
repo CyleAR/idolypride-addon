@@ -33,14 +33,14 @@ import io.github.cylear.idolypride.addon.R
 import io.github.cylear.idolypride.addon.hookUtils.FilesChecker.convertToString
 import io.github.cylear.idolypride.addon.mainUtils.json
 import io.github.cylear.idolypride.addon.models.AboutPageConfig
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.ui.components.GakuButton
 
 
 @Composable
 fun AboutPage(modifier: Modifier = Modifier,
              context: MainActivity? = null,
-             previewData: GakumasConfig? = null,
+             previewData: IdolyprideConfig? = null,
              bottomSpacerHeight: Dp = 120.dp,
              screenH: Dp = 1080.dp) {
     // val config = getConfigState(context, previewData)
@@ -209,6 +209,6 @@ fun NetworkSvgImage(
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun AboutPagePreview(modifier: Modifier = Modifier, data: GakumasConfig = GakumasConfig()) {
+fun AboutPagePreview(modifier: Modifier = Modifier, data: IdolyprideConfig = IdolyprideConfig()) {
     AboutPage(modifier, previewData = data)
 }

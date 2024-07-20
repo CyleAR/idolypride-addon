@@ -121,9 +121,9 @@ object FileDownloader {
             return Pair(0, url)
         }
 
-        // https://github.com/chinosk6/GakumasTranslationData
-        // https://github.com/chinosk6/GakumasTranslationData.git
-        // https://github.com/chinosk6/GakumasTranslationData/archive/refs/heads/main.zip
+        // https://github.com/chinosk6/IdolyprideTranslationData
+        // https://github.com/chinosk6/IdolyprideTranslationData.git
+        // https://github.com/chinosk6/IdolyprideTranslationData/archive/refs/heads/main.zip
         if (url.endsWith(".git")) {
             return Pair(2, "${url.substring(0, url.length - 4)}/archive/refs/heads/main.zip")
         }

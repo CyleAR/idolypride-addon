@@ -40,7 +40,7 @@ import io.github.cylear.idolypride.addon.getProgramDownloadState
 import io.github.cylear.idolypride.addon.getProgramLocalResourceVersionState
 import io.github.cylear.idolypride.addon.hookUtils.FileHotUpdater
 import io.github.cylear.idolypride.addon.mainUtils.FileDownloader
-import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.models.ResourceCollapsibleBoxViewModel
 import io.github.cylear.idolypride.addon.models.ResourceCollapsibleBoxViewModelFactory
 import io.github.cylear.idolypride.addon.ui.components.base.CollapsibleBox
@@ -55,7 +55,7 @@ import java.io.File
 @Composable
 fun HomePage(modifier: Modifier = Modifier,
              context: MainActivity? = null,
-             previewData: GakumasConfig? = null,
+             previewData: IdolyprideConfig? = null,
              bottomSpacerHeight: Dp = 120.dp,
              screenH: Dp = 1080.dp) {
     val config = getConfigState(context, previewData)
@@ -471,6 +471,6 @@ fun HomePage(modifier: Modifier = Modifier,
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun HomePagePreview(modifier: Modifier = Modifier, data: GakumasConfig = GakumasConfig()) {
+fun HomePagePreview(modifier: Modifier = Modifier, data: IdolyprideConfig = IdolyprideConfig()) {
     HomePage(modifier, previewData = data)
 }

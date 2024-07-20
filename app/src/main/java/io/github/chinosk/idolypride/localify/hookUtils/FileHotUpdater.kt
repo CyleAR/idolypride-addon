@@ -3,7 +3,7 @@ package io.github.cylear.idolypride.addon.hookUtils
 import android.app.Activity
 import android.net.Uri
 import android.util.Log
-import io.github.cylear.idolypride.addon.GakumasHookMain
+import io.github.cylear.idolypride.addon.idolyprideHookMain
 import io.github.cylear.idolypride.addon.TAG
 import java.io.BufferedReader
 import java.io.File
@@ -138,7 +138,7 @@ object FileHotUpdater {
 
     fun updateFilesFromZip(activity: Activity, zipFileUri: Uri, filesDir: File, deleteAfterUpdate: Boolean) {
         try {
-            GakumasHookMain.showToast("Updating files from zip...")
+            idolyprideHookMain.showToast("Updating files from zip...")
 
             var basePath: String?
             activity.contentResolver.openInputStream(zipFileUri).use {
@@ -159,22 +159,22 @@ object FileHotUpdater {
             activity.contentResolver.openInputStream(zipFileUri).use {
                 it?.let {
                     unzip(it, File(filesDir, FilesChecker.localizationFilesDir).absolutePath,
-                        basePath!!, "../gakumas-local/")
+                        basePath!!, "../idolypride-local/")
                     if (deleteAfterUpdate) {
                         activity.contentResolver.delete(zipFileUri, null, null)
                     }
-                    GakumasHookMain.showToast("Update success.")
+                    idolyprideHookMain.showToast("Update success.")
                 }
             }
 
         }
         catch (e: java.io.FileNotFoundException) {
             Log.i(TAG, "updateFilesFromZip - file not found: $e")
-            GakumasHookMain.showToast("Update file not found.")
+            idolyprideHookMain.showToast("Update file not found.")
         }
         catch (e: Exception) {
             Log.e(TAG, "updateFilesFromZip failed: $e")
-            GakumasHookMain.showToast("Updating files failed: $e")
+            idolyprideHookMain.showToast("Updating files failed: $e")
         }
     }
 
