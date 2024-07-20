@@ -4,10 +4,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AboutPageConfig(
-    val plugin_repo: String = "https://github.com/cylear/gakuen-imas-localify",
+    val plugin_repo: String = "https://github.com/cylear/idolypride-addon",
     val main_contributors: List<MainContributors> = listOf(),
     val contrib_img: ContribImg = ContribImg(
-        "https://contrib.rocks/image?repo=cylear/gakuen-imas-localify",
+        "https://contrib.rocks/image?repo=cylear/idolypride-addon",
         "https://contrib.rocks/image?repo=cylear/IdolyprideTranslationData"
     )
 )

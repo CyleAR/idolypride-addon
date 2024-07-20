@@ -45,7 +45,7 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private val targetPackageName = "com.neowiz.game.idolypride"
     private val nativeLibName = "MarryAoi"
 
-    private var gkmsDataInited = false
+    private var iprDataInited = false
 
     private var getConfigError: Exception? = null
     private var externalFilesChecked: Boolean = false
@@ -139,7 +139,7 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     showGetConfigFailed(currActivity)
                 }
                 else {
-                    initGkmsConfig(currActivity)
+                    initIprConfig(currActivity)
                 }
             }
         })
@@ -152,7 +152,7 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     showGetConfigFailed(currActivity)
                 }
                 else {
-                    initGkmsConfig(currActivity)
+                    initIprConfig(currActivity)
                 }
             }
         })
@@ -182,7 +182,7 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                         return
                     }
 
-                    if (!gkmsDataInited) {
+                    if (!iprDataInited) {
                         requestConfig(app.applicationContext)
                     }
 
@@ -215,14 +215,14 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         }
     }
 
-    fun initGkmsConfig(activity: Activity) {
+    fun initIprConfig(activity: Activity) {
         val intent = activity.intent
-        val gkmsData = intent.getStringExtra("gkmsData")
+        val iprData = intent.getStringExtra("iprData")
         val programData = intent.getStringExtra("localData")
-        if (gkmsData != null) {
-            gkmsDataInited = true
+        if (iprData != null) {
+            iprDataInited = true
             val initConfig = try {
-                json.decodeFromString<IdolyprideConfig>(gkmsData)
+                json.decodeFromString<IdolyprideConfig>(iprData)
             }
             catch (e: Exception) {
                 null
@@ -266,8 +266,8 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 }
             }
 
-            loadConfig(gkmsData)
-            Log.d(TAG, "gkmsData: $gkmsData")
+            loadConfig(iprData)
+            Log.d(TAG, "iprData: $iprData")
         }
     }
 
@@ -348,7 +348,7 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         try {
             val intent = Intent().apply {
                 setClassName("io.github.cylear.idolypride.addon", "io.github.cylear.idolypride.addon.TranslucentActivity")
-                putExtra("gkmsData", "requestConfig")
+                putExtra("iprData", "requestConfig")
                 flags = FLAG_ACTIVITY_NEW_TASK
             }
             activity.startActivity(intent)
@@ -357,10 +357,10 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             getConfigError = e
             val fakeActivity = Activity().apply {
                 intent = Intent().apply {
-                    putExtra("gkmsData", "{}")
+                    putExtra("iprData", "{}")
                 }
             }
-            initGkmsConfig(fakeActivity)
+            initIprConfig(fakeActivity)
         }
 
     }

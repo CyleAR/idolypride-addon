@@ -13,7 +13,7 @@ class TranslucentActivity : ComponentActivity(), IConfigurableActivity<Transluce
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loadConfig()
-        val requestData = intent.getStringExtra("gkmsData")
+        val requestData = intent.getStringExtra("iprData")
         if (requestData != null) {
             if (requestData == "requestConfig") {
                 onClickStartGame()

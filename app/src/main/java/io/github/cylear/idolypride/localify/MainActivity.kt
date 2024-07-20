@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
         catch (e: RuntimeException) {
             Log.d(TAG, e.toString())
         }
-        val configFile = File(filesDir, "gkms-config.json")
+        val configFile = File(filesDir, "ipr-config.json")
         configFile.writeText(json.encodeToString(config))
     }
 

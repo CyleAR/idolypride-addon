@@ -23,7 +23,7 @@ interface IConfigurableActivity<T : Activity> : IHasConfigItems
 
 
 fun <T> T.getConfigContent(): String where T : Activity {
-    val configFile = File(filesDir, "gkms-config.json")
+    val configFile = File(filesDir, "ipr-config.json")
     return if (configFile.exists()) {
         configFile.readText()
     } else {
@@ -82,7 +82,7 @@ fun <T> T.onClickStartGame() where T : Activity, T : IHasConfigItems {
             "com.neowiz.game.idolypride",
             "com.google.firebase.MessagingUnityPlayerActivity"
         )
-        putExtra("gkmsData", getConfigContent())
+        putExtra("iprData", getConfigContent())
         putExtra(
             "localData",
             getProgramConfigContent(listOf("transRemoteZipUrl", "p"), programConfig)

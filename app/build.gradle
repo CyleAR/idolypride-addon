@@ -73,7 +73,7 @@ android {
     applicationVariants.configureEach { variant ->
         variant.mergeAssetsProvider.configure { mergeAssetsTask ->
             mergeAssetsTask.doLast {
-                delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['idolypride-local/gakuen-adapted-translation-data/**',
+                delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['idolypride-local/idolpride-adapted-translation-data/**',
                                                                            'idolypride-local/IdolypridePreTranslation/**',
                                                                            'idolypride-local/raw/**']))
             }

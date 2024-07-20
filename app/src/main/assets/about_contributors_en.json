@@ -1,11 +1,10 @@
 {
-    "plugin_repo": "https://github.com/cylear/gakuen-imas-localify",
+    "plugin_repo": "https://github.com/cylear/idolypride-addon",
     "main_contributors": [
         {
             "name": "chinosk (Plugin code)",
             "links": [
-                {"name": "Github", "link": "https://github.com/cylear"},
-                {"name": "Bilibili", "link": "https://space.bilibili.com/287061163"}
+                {"name": "Github", "link": "https://github.com/cylear"}
             ]
         },
         {
@@ -23,7 +22,7 @@
         }
     ],
     "contrib_img": {
-        "plugin": "https://contrib.rocks/image?repo=cylear/gakuen-imas-localify",
+        "plugin": "https://contrib.rocks/image?repo=cylear/idolypride-addon",
         "translation": "https://contrib.rocks/image?repo=cylear/IdolyprideTranslationData"
     }
 }
