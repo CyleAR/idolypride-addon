@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.theme
+package io.github.cylear.idolypride.addon.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

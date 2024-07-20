@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.components
+package io.github.cylear.idolypride.addon.ui.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.chinosk.gakumas.localify.ui.components.base.AutoSizeText
+import io.github.cylear.idolypride.addon.ui.components.base.AutoSizeText
 
 @Composable
 fun GakuRadio(

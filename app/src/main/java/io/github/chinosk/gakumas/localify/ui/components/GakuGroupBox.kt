@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.components
+package io.github.cylear.idolypride.addon.ui.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.background
@@ -17,7 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.chinosk.gakumas.localify.R
+import io.github.cylear.idolypride.addon.R
 
 @Composable
 fun GakuGroupBox(

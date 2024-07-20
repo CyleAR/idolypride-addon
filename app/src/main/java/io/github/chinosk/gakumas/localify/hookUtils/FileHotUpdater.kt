@@ -1,10 +1,10 @@
-package io.github.chinosk.gakumas.localify.hookUtils
+package io.github.cylear.idolypride.addon.hookUtils
 
 import android.app.Activity
 import android.net.Uri
 import android.util.Log
-import io.github.chinosk.gakumas.localify.GakumasHookMain
-import io.github.chinosk.gakumas.localify.TAG
+import io.github.cylear.idolypride.addon.GakumasHookMain
+import io.github.cylear.idolypride.addon.TAG
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream

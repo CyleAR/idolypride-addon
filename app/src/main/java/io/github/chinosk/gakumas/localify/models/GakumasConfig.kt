@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.models
+package io.github.cylear.idolypride.addon.models
 
 import kotlinx.serialization.Serializable
 

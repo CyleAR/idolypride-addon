@@ -1,6 +1,6 @@
-package io.github.chinosk.gakumas.localify.ui.pages.subPages
+package io.github.cylear.idolypride.addon.ui.pages.subPages
 
-import io.github.chinosk.gakumas.localify.ui.components.GakuGroupBox
+import io.github.cylear.idolypride.addon.ui.components.GakuGroupBox
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,25 +30,25 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.chinosk.gakumas.localify.MainActivity
-import io.github.chinosk.gakumas.localify.R
-import io.github.chinosk.gakumas.localify.getConfigState
-import io.github.chinosk.gakumas.localify.getProgramConfigState
-import io.github.chinosk.gakumas.localify.getProgramDownloadAbleState
-import io.github.chinosk.gakumas.localify.getProgramDownloadErrorStringState
-import io.github.chinosk.gakumas.localify.getProgramDownloadState
-import io.github.chinosk.gakumas.localify.getProgramLocalResourceVersionState
-import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
-import io.github.chinosk.gakumas.localify.mainUtils.FileDownloader
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.models.ResourceCollapsibleBoxViewModel
-import io.github.chinosk.gakumas.localify.models.ResourceCollapsibleBoxViewModelFactory
-import io.github.chinosk.gakumas.localify.ui.components.base.CollapsibleBox
-import io.github.chinosk.gakumas.localify.ui.components.GakuButton
-import io.github.chinosk.gakumas.localify.ui.components.GakuProgressBar
-import io.github.chinosk.gakumas.localify.ui.components.GakuRadio
-import io.github.chinosk.gakumas.localify.ui.components.GakuSwitch
-import io.github.chinosk.gakumas.localify.ui.components.GakuTextInput
+import io.github.cylear.idolypride.addon.MainActivity
+import io.github.cylear.idolypride.addon.R
+import io.github.cylear.idolypride.addon.getConfigState
+import io.github.cylear.idolypride.addon.getProgramConfigState
+import io.github.cylear.idolypride.addon.getProgramDownloadAbleState
+import io.github.cylear.idolypride.addon.getProgramDownloadErrorStringState
+import io.github.cylear.idolypride.addon.getProgramDownloadState
+import io.github.cylear.idolypride.addon.getProgramLocalResourceVersionState
+import io.github.cylear.idolypride.addon.hookUtils.FileHotUpdater
+import io.github.cylear.idolypride.addon.mainUtils.FileDownloader
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.ResourceCollapsibleBoxViewModel
+import io.github.cylear.idolypride.addon.models.ResourceCollapsibleBoxViewModelFactory
+import io.github.cylear.idolypride.addon.ui.components.base.CollapsibleBox
+import io.github.cylear.idolypride.addon.ui.components.GakuButton
+import io.github.cylear.idolypride.addon.ui.components.GakuProgressBar
+import io.github.cylear.idolypride.addon.ui.components.GakuRadio
+import io.github.cylear.idolypride.addon.ui.components.GakuSwitch
+import io.github.cylear.idolypride.addon.ui.components.GakuTextInput
 import java.io.File
 
 

@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.22.1)
 # Since this is the top level CMakeLists.txt, the project name is also accessible
 # with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
 # build script scope).
-project(MarryKotone)
+project(MarryAoi)
 
 add_compile_options(-fdeclspec)
 add_compile_options(-Wno-undefined-bool-conversion)
@@ -36,21 +36,21 @@ find_package(shadowhook REQUIRED CONFIG)
 # used in the AndroidManifest.xml file.
 add_library(${CMAKE_PROJECT_NAME} SHARED
     # List C/C++ source files with relative paths to this CMakeLists.txt.
-        libMarryKotone.cpp
-        GakumasLocalify/Plugin.cpp
-        GakumasLocalify/Hook.cpp
-        GakumasLocalify/Log.cpp
-        GakumasLocalify/Misc.cpp
-        GakumasLocalify/Local.cpp
-        GakumasLocalify/camera/baseCamera.cpp
-        GakumasLocalify/camera/camera.cpp
-        GakumasLocalify/config/Config.cpp
+        libMarryAoi.cpp
+        IdolyprideAddon/Plugin.cpp
+        IdolyprideAddon/Hook.cpp
+        IdolyprideAddon/Log.cpp
+        IdolyprideAddon/Misc.cpp
+        IdolyprideAddon/Local.cpp
+        IdolyprideAddon/camera/baseCamera.cpp
+        IdolyprideAddon/camera/camera.cpp
+        IdolyprideAddon/config/Config.cpp
         )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} xdl::xdl)
 target_link_libraries(${CMAKE_PROJECT_NAME} shadowhook::shadowhook)
 
-include_directories(GakumasLocalify)
+include_directories(IdolyprideAddon)
 include_directories(${CMAKE_SOURCE_DIR}/deps)
 
 # Specifies libraries CMake should link to your target library. You

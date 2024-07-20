@@ -1,12 +1,12 @@
-package io.github.chinosk.gakumas.localify
+package io.github.cylear.idolypride.addon
 
 import android.view.KeyEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.models.ProgramConfig
-import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModel
-import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModelFactory
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.ProgramConfig
+import io.github.cylear.idolypride.addon.models.ProgramConfigViewModel
+import io.github.cylear.idolypride.addon.models.ProgramConfigViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

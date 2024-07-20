@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.pages
+package io.github.cylear.idolypride.addon.ui.pages
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -22,13 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.chinosk.gakumas.localify.MainActivity
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.onClickStartGame
-import io.github.chinosk.gakumas.localify.ui.components.GakuTabRow
-import io.github.chinosk.gakumas.localify.ui.pages.subPages.AboutPage
-import io.github.chinosk.gakumas.localify.ui.pages.subPages.AdvanceSettingsPage
-import io.github.chinosk.gakumas.localify.ui.pages.subPages.HomePage
+import io.github.cylear.idolypride.addon.MainActivity
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.onClickStartGame
+import io.github.cylear.idolypride.addon.ui.components.GakuTabRow
+import io.github.cylear.idolypride.addon.ui.pages.subPages.AboutPage
+import io.github.cylear.idolypride.addon.ui.pages.subPages.AdvanceSettingsPage
+import io.github.cylear.idolypride.addon.ui.pages.subPages.HomePage
 
 
 @OptIn(ExperimentalFoundationApi::class)

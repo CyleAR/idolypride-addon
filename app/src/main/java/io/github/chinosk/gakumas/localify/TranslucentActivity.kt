@@ -1,9 +1,9 @@
-package io.github.chinosk.gakumas.localify
+package io.github.cylear.idolypride.addon
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.models.ProgramConfig
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.ProgramConfig
 
 
 class TranslucentActivity : ComponentActivity(), IConfigurableActivity<TranslucentActivity> {

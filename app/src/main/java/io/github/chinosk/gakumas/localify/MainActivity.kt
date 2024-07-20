@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify
+package io.github.cylear.idolypride.addon
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -13,16 +13,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModelProvider
-import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
-import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
-import io.github.chinosk.gakumas.localify.hookUtils.MainKeyEventDispatcher
-import io.github.chinosk.gakumas.localify.mainUtils.json
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.models.ProgramConfig
-import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModel
-import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModelFactory
-import io.github.chinosk.gakumas.localify.ui.pages.MainUI
-import io.github.chinosk.gakumas.localify.ui.theme.GakumasLocalifyTheme
+import io.github.cylear.idolypride.addon.hookUtils.FileHotUpdater
+import io.github.cylear.idolypride.addon.hookUtils.FilesChecker
+import io.github.cylear.idolypride.addon.hookUtils.MainKeyEventDispatcher
+import io.github.cylear.idolypride.addon.mainUtils.json
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.ProgramConfig
+import io.github.cylear.idolypride.addon.models.ProgramConfigViewModel
+import io.github.cylear.idolypride.addon.models.ProgramConfigViewModelFactory
+import io.github.cylear.idolypride.addon.ui.pages.MainUI
+import io.github.cylear.idolypride.addon.ui.theme.IdolyprideAddonTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.encodeToString
@@ -123,7 +123,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
         programConfigViewModel = ViewModelProvider(this, programConfigFactory)[ProgramConfigViewModel::class.java]
 
         setContent {
-            GakumasLocalifyTheme(dynamicColor = false, darkTheme = false) {
+            IdolyprideAddonTheme(dynamicColor = false, darkTheme = false) {
                 MainUI(context = this)
             }
         }

@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.hookUtils
+package io.github.cylear.idolypride.addon.hookUtils
 
 import android.view.KeyEvent
 

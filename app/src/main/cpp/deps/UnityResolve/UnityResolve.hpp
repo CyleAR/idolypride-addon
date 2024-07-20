@@ -44,8 +44,8 @@
 #endif
 
 #include "xdl.h"
-#include "../../GakumasLocalify/Log.h"
-#include "../../GakumasLocalify/Misc.hpp"
+#include "../../IdolyprideAddon/Log.h"
+#include "../../IdolyprideAddon/Misc.hpp"
 
 class UnityResolve final {
 public:

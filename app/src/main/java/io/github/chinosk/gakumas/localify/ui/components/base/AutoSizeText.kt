@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.components.base
+package io.github.cylear.idolypride.addon.ui.components.base
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text

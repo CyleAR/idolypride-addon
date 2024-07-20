@@ -4,10 +4,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
-        <variable name="config" type="io.github.chinosk.gakumas.localify.models.GakumasConfig" />
+        <variable name="config" type="io.github.cylear.idolypride.addon.models.GakumasConfig" />
         <variable
             name="listener"
-            type="io.github.chinosk.gakumas.localify.ConfigListener" />
+            type="io.github.cylear.idolypride.addon.ConfigListener" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

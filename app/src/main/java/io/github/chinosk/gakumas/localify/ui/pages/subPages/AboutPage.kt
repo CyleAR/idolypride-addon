@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.pages.subPages
+package io.github.cylear.idolypride.addon.ui.pages.subPages
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.Image
@@ -28,13 +28,13 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import coil.size.Size
-import io.github.chinosk.gakumas.localify.MainActivity
-import io.github.chinosk.gakumas.localify.R
-import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker.convertToString
-import io.github.chinosk.gakumas.localify.mainUtils.json
-import io.github.chinosk.gakumas.localify.models.AboutPageConfig
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.ui.components.GakuButton
+import io.github.cylear.idolypride.addon.MainActivity
+import io.github.cylear.idolypride.addon.R
+import io.github.cylear.idolypride.addon.hookUtils.FilesChecker.convertToString
+import io.github.cylear.idolypride.addon.mainUtils.json
+import io.github.cylear.idolypride.addon.models.AboutPageConfig
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.ui.components.GakuButton
 
 
 @Composable

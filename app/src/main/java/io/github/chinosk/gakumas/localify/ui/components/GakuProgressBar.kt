@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.components
+package io.github.cylear.idolypride.addon.ui.components
 
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO

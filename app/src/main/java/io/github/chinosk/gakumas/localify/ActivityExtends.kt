@@ -1,13 +1,13 @@
-package io.github.chinosk.gakumas.localify
+package io.github.cylear.idolypride.addon
 
 import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import io.github.chinosk.gakumas.localify.mainUtils.json
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.models.ProgramConfig
-import io.github.chinosk.gakumas.localify.models.ProgramConfigSerializer
+import io.github.cylear.idolypride.addon.mainUtils.json
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.models.ProgramConfig
+import io.github.cylear.idolypride.addon.models.ProgramConfigSerializer
 import kotlinx.serialization.SerializationException
 import java.io.File
 
@@ -79,7 +79,7 @@ fun <T> T.loadConfig() where T : Activity, T : IHasConfigItems {
 fun <T> T.onClickStartGame() where T : Activity, T : IHasConfigItems {
     val intent = Intent().apply {
         setClassName(
-            "com.bandainamcoent.idolmaster_gakuen",
+            "com.neowiz.game.idolypride",
             "com.google.firebase.MessagingUnityPlayerActivity"
         )
         putExtra("gkmsData", getConfigContent())
@@ -94,7 +94,7 @@ fun <T> T.onClickStartGame() where T : Activity, T : IHasConfigItems {
     if (updateFile.exists()) {
         val dirUri = FileProvider.getUriForFile(
             this,
-            "io.github.chinosk.gakumas.localify.fileprovider",
+            "io.github.cylear.idolypride.addon.fileprovider",
             File(updateFile.absolutePath)
         )
         intent.setDataAndType(dirUri, "resource/file")

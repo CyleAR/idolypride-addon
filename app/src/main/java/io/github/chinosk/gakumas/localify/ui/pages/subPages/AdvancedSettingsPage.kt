@@ -1,6 +1,6 @@
-package io.github.chinosk.gakumas.localify.ui.pages.subPages
+package io.github.cylear.idolypride.addon.ui.pages.subPages
 
-import io.github.chinosk.gakumas.localify.ui.components.GakuGroupBox
+import io.github.cylear.idolypride.addon.ui.components.GakuGroupBox
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,16 +26,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.chinosk.gakumas.localify.MainActivity
-import io.github.chinosk.gakumas.localify.R
-import io.github.chinosk.gakumas.localify.getConfigState
-import io.github.chinosk.gakumas.localify.models.BreastCollapsibleBoxViewModel
-import io.github.chinosk.gakumas.localify.models.BreastCollapsibleBoxViewModelFactory
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.ui.components.base.CollapsibleBox
-import io.github.chinosk.gakumas.localify.ui.components.GakuButton
-import io.github.chinosk.gakumas.localify.ui.components.GakuSwitch
-import io.github.chinosk.gakumas.localify.ui.components.GakuTextInput
+import io.github.cylear.idolypride.addon.MainActivity
+import io.github.cylear.idolypride.addon.R
+import io.github.cylear.idolypride.addon.getConfigState
+import io.github.cylear.idolypride.addon.models.BreastCollapsibleBoxViewModel
+import io.github.cylear.idolypride.addon.models.BreastCollapsibleBoxViewModelFactory
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.ui.components.base.CollapsibleBox
+import io.github.cylear.idolypride.addon.ui.components.GakuButton
+import io.github.cylear.idolypride.addon.ui.components.GakuSwitch
+import io.github.cylear.idolypride.addon.ui.components.GakuTextInput
 
 
 @Composable

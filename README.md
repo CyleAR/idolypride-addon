@@ -1,12 +1,12 @@
 # idolypride-addon
 
 - An xposed plugin for Idolypride
-
-
+- This repository is irrelevant to Idolm@ster and BandaiNamco
+- Use this plugin at your own risk
 
 # Usage
 
-- With Rooted Device: [LSPatch](https://github.com/LSPosed/LSPatch)。
+- With Rooted Device: [LSPatch](https://github.com/LSPosed/LSPatch)
 
 
 # TODO

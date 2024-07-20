@@ -1,14 +1,14 @@
-#include "GakumasLocalify/Plugin.h"
-#include "GakumasLocalify/Log.h"
-#include "GakumasLocalify/Local.h"
+#include "IdolyprideAddon/Plugin.h"
+#include "IdolyprideAddon/Log.h"
+#include "IdolyprideAddon/Local.h"
 
 #include <jni.h>
 #include <android/log.h>
 #include "string"
 #include "shadowhook.h"
 #include "xdl.h"
-#include "GakumasLocalify/camera/camera.hpp"
-#include "GakumasLocalify/config/Config.hpp"
+#include "IdolyprideAddon/camera/camera.hpp"
+#include "IdolyprideAddon/config/Config.hpp"
 #include "Joystick/JoystickEvent.h"
 
 JavaVM* g_javaVM = nullptr;

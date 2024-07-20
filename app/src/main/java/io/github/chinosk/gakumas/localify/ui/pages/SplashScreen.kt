@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
-import io.github.chinosk.gakumas.localify.R
+import io.github.cylear.idolypride.addon.R
 
 @Composable
 fun SplashScreen(navController: NavController) {

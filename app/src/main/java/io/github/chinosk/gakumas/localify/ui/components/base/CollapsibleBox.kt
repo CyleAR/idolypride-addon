@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.components.base
+package io.github.cylear.idolypride.addon.ui.components.base
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.animation.animateContentSize
@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.chinosk.gakumas.localify.models.CollapsibleBoxViewModel
+import io.github.cylear.idolypride.addon.models.CollapsibleBoxViewModel
 
 @Composable
 fun CollapsibleBox(

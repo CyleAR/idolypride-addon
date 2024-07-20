@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.pages
+package io.github.cylear.idolypride.addon.ui.pages
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.Image
@@ -26,10 +26,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.chinosk.gakumas.localify.MainActivity
-import io.github.chinosk.gakumas.localify.R
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.ui.theme.GakumasLocalifyTheme
+import io.github.cylear.idolypride.addon.MainActivity
+import io.github.cylear.idolypride.addon.R
+import io.github.cylear.idolypride.addon.models.GakumasConfig
+import io.github.cylear.idolypride.addon.ui.theme.IdolyprideAddonTheme
 
 
 @Composable
@@ -107,7 +107,7 @@ fun MainUIPreview(modifier: Modifier = Modifier) {
     val previewConfig = GakumasConfig()
     previewConfig.enabled = true
 
-    GakumasLocalifyTheme {
+    IdolyprideAddonTheme {
         MainUI(previewData = previewConfig)
     }
 }

@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-    namespace 'io.github.chinosk.gakumas.localify'
+    namespace 'io.github.cylear.idolypride.addon'
     compileSdk 34
     ndkVersion "26.3.11579264"
 
     defaultConfig {
-        applicationId "io.github.chinosk.gakumas.localify"
+        applicationId "io.github.cylear.idolypride.addon"
         minSdk 29
         targetSdk 34
         versionCode 2

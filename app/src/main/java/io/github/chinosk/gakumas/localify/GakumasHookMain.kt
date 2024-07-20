@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify
+package io.github.cylear.idolypride.addon
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -22,8 +22,8 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
-import io.github.chinosk.gakumas.localify.models.GakumasConfig
+import io.github.cylear.idolypride.addon.hookUtils.FilesChecker
+import io.github.cylear.idolypride.addon.models.GakumasConfig
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -32,18 +32,18 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 import kotlin.system.measureTimeMillis
-import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
-import io.github.chinosk.gakumas.localify.mainUtils.json
-import io.github.chinosk.gakumas.localify.models.ProgramConfig
+import io.github.cylear.idolypride.addon.hookUtils.FileHotUpdater
+import io.github.cylear.idolypride.addon.mainUtils.json
+import io.github.cylear.idolypride.addon.models.ProgramConfig
 
-val TAG = "GakumasLocalify"
+val TAG = "IdolyprideAddon"
 
 class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private lateinit var modulePath: String
     private var nativeLibLoadSuccess: Boolean
     private var alreadyInitialized = false
-    private val targetPackageName = "com.bandainamcoent.idolmaster_gakuen"
-    private val nativeLibName = "MarryKotone"
+    private val targetPackageName = "com.neowiz.game.idolypride"
+    private val nativeLibName = "MarryAoi"
 
     private var gkmsDataInited = false
 
@@ -51,9 +51,9 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var externalFilesChecked: Boolean = false
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-//        if (lpparam.packageName == "io.github.chinosk.gakumas.localify") {
+//        if (lpparam.packageName == "io.github.cylear.idolypride.addon") {
 //            XposedHelpers.findAndHookMethod(
-//                "io.github.chinosk.gakumas.localify.MainActivity",
+//                "io.github.cylear.idolypride.addon.MainActivity",
 //                lpparam.classLoader,
 //                "showToast",
 //                String::class.java,
@@ -287,7 +287,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
 
         builder.setNegativeButton(dlButton) { dialog, _ ->
             dialog.dismiss()
-            val webpage = Uri.parse("https://github.com/chinosk6/gakuen-imas-localify")
+            val webpage = Uri.parse("https://github.com/CyleAR/idolypride-addon")
             val intent = Intent(Intent.ACTION_VIEW, webpage)
             activity.startActivity(intent)
         }
@@ -347,7 +347,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     fun requestConfig(activity: Context) {
         try {
             val intent = Intent().apply {
-                setClassName("io.github.chinosk.gakumas.localify", "io.github.chinosk.gakumas.localify.TranslucentActivity")
+                setClassName("io.github.cylear.idolypride.addon", "io.github.cylear.idolypride.addon.TranslucentActivity")
                 putExtra("gkmsData", "requestConfig")
                 flags = FLAG_ACTIVITY_NEW_TASK
             }
