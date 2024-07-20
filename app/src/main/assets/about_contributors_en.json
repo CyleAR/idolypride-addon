@@ -1,10 +1,10 @@
 {
-    "plugin_repo": "https://github.com/chinosk6/gakuen-imas-localify",
+    "plugin_repo": "https://github.com/cylear/gakuen-imas-localify",
     "main_contributors": [
         {
             "name": "chinosk (Plugin code)",
             "links": [
-                {"name": "Github", "link": "https://github.com/chinosk6"},
+                {"name": "Github", "link": "https://github.com/cylear"},
                 {"name": "Bilibili", "link": "https://space.bilibili.com/287061163"}
             ]
         },
@@ -18,12 +18,12 @@
         {
             "name": "And all other translators",
             "links": [
-                {"name": "Github", "link": "https://github.com/chinosk6/IdolyprideTranslationData/graphs/contributors"}
+                {"name": "Github", "link": "https://github.com/cylear/IdolyprideTranslationData/graphs/contributors"}
             ]
         }
     ],
     "contrib_img": {
-        "plugin": "https://contrib.rocks/image?repo=chinosk6/gakuen-imas-localify",
-        "translation": "https://contrib.rocks/image?repo=chinosk6/IdolyprideTranslationData"
+        "plugin": "https://contrib.rocks/image?repo=cylear/gakuen-imas-localify",
+        "translation": "https://contrib.rocks/image?repo=cylear/IdolyprideTranslationData"
     }
 }
