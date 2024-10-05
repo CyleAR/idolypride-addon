@@ -29,12 +29,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.Locale
-import kotlin.system.measureTimeMillis
-import io.github.cylear.idolypride.addon.hookUtils.FileHotUpdater
-import io.github.cylear.idolypride.addon.mainUtils.json
-import io.github.cylear.idolypride.addon.models.ProgramConfig
 
 val TAG = "IdolyprideAddon"
 
@@ -51,20 +48,6 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var externalFilesChecked: Boolean = false
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-//        if (lpparam.packageName == "io.github.cylear.idolypride.addon") {
-//            XposedHelpers.findAndHookMethod(
-//                "io.github.cylear.idolypride.addon.MainActivity",
-//                lpparam.classLoader,
-//                "showToast",
-//                String::class.java,
-//                object : XC_MethodHook() {
-//                    override fun beforeHookedMethod(param: MethodHookParam) {
-//                        Log.d(TAG, "beforeHookedMethod hooked: ${param.args}")
-//                    }
-//                }
-//            )
-//        }
-
         if (lpparam.packageName != targetPackageName) {
             return
         }
@@ -198,21 +181,6 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     alreadyInitialized = true
                 }
             })
-
-        startLoop()
-    }
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private fun startLoop() {
-        GlobalScope.launch {
-            val interval = 1000L / 30
-            while (isActive) {
-                val timeTaken = measureTimeMillis {
-                    pluginCallbackLooper()
-                }
-                delay(interval - timeTaken)
-            }
-        }
     }
 
     fun initIprConfig(activity: Activity) {
@@ -222,50 +190,14 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         if (iprData != null) {
             iprDataInited = true
             val initConfig = try {
-                json.decodeFromString<IdolyprideConfig>(iprData)
+                Json.decodeFromString<IdolyprideConfig>(iprData)
             }
             catch (e: Exception) {
                 null
             }
-            val programConfig = try {
-                if (programData == null) {
-                    ProgramConfig()
-                } else {
-                    json.decodeFromString<ProgramConfig>(programData)
-                }
-            }
-            catch (e: Exception) {
-                null
-            }
-
-            // 清理本地文件
-            if (programConfig?.cleanLocalAssets == true) {
-                FilesChecker.cleanAssets()
-            }
-
-            // 检查 files 版本和 assets 版本并更新
-            if (programConfig?.checkBuiltInAssets == true) {
-                FilesChecker.initAndCheck(activity.filesDir, modulePath)
-            }
-
-            // 强制导出 assets 文件
             if (initConfig?.forceExportResource == true) {
                 FilesChecker.updateFiles()
             }
-
-            // 使用热更新文件
-            if (programConfig?.useRemoteAssets == true) {
-                val dataUri = intent.data
-                if (dataUri != null) {
-                    if (!externalFilesChecked) {
-                        externalFilesChecked = true
-                        // Log.d(TAG, "dataUri: $dataUri")
-                        FileHotUpdater.updateFilesFromZip(activity, dataUri, activity.filesDir,
-                            programConfig.delRemoteAfterUpdate)
-                    }
-                }
-            }
-
             loadConfig(iprData)
             Log.d(TAG, "iprData: $iprData")
         }
@@ -309,21 +241,7 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     }
 
     fun showGetConfigFailed(activity: Context) {
-        val langData = when (getCurrentLanguage(activity)) {
-            "zh" -> {
-                mapOf(
-                    "title" to "无法读取设置",
-                    "message" to "配置读取失败，将使用默认配置。\n" +
-                            "可能是您使用了 LSPatch 等工具的集成模式，也有可能是您拒绝了拉起插件的权限。\n" +
-                            "若您使用了 LSPatch 等工具的集成模式，且没有单独安装插件本体，请下载插件本体。\n" +
-                            "若您安装了插件本体，却弹出这个错误，请允许本应用拉起其他应用。",
-                    "infoButton" to "详情",
-                    "dlButton" to "下载",
-                    "okButton" to "确定"
-                )
-            }
-            else -> {
-                mapOf(
+        val langData = mapOf(
                     "title" to "Get Config Failed",
                     "message" to "Configuration loading failed, the default configuration will be used.\n" +
                             "This might be due to the use the integration mode of LSPatch, or possibly because you denied the permission to launch the plugin.\n" +
@@ -333,8 +251,6 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     "dlButton" to "Download",
                     "okButton" to "OK"
                 )
-            }
-        }
         showGetConfigFailedImpl(activity, langData["title"]!!, langData["message"]!!, langData["infoButton"]!!,
             langData["dlButton"]!!, langData["okButton"]!!)
     }
