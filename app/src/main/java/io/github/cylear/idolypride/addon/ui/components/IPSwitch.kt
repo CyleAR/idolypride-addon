@@ -33,7 +33,7 @@ fun GakuSwitch(modifier: Modifier = Modifier,
             modifier = Modifier,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color(0xFFFFFFFF),
-                checkedTrackColor = Color(0xFFF9C114),
+                checkedTrackColor = Color(0xFF1428ff),
 
                 uncheckedThumbColor = Color(0xFFFFFFFF),
                 uncheckedTrackColor = Color(0xFFCFD8DC),

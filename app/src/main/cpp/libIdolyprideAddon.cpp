@@ -55,7 +55,7 @@ JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_initHook(JNIEnv *env, jclass clazz, jstring targetLibraryPath,
+Java_io_github_cylear_idolypride_addon_idolyprideHookMain_initHook(JNIEnv *env, jclass clazz, jstring targetLibraryPath,
                                                                  jstring localizationFilesDir) {
     g_idolyprideHookMainClass = clazz;
     showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
@@ -72,8 +72,8 @@ Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_initHook(JNIEnv *e
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_keyboardEvent(JNIEnv *env, jclass clazz, jint key_code, jint action) {
-    GKCamera::on_cam_rawinput_keyboard(action, key_code);
+Java_io_github_cylear_idolypride_addon_idolyprideHookMain_keyboardEvent(JNIEnv *env, jclass clazz, jint key_code, jint action) {
+    IPCamera::on_cam_rawinput_keyboard(action, key_code);
     const auto msg = IdolyprideLocal::Local::OnKeyDown(action, key_code);
     if (!msg.empty()) {
         g_idolyprideHookMainClass = clazz;
@@ -90,7 +90,7 @@ Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_keyboardEvent(JNIE
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_joystickEvent(JNIEnv *env, jclass clazz,
+Java_io_github_cylear_idolypride_addon_idolyprideHookMain_joystickEvent(JNIEnv *env, jclass clazz,
                                                                       jint action,
                                                                       jfloat leftStickX,
                                                                       jfloat leftStickY,
@@ -101,12 +101,12 @@ Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_joystickEvent(JNIE
                                                                       jfloat hatX,
                                                                       jfloat hatY) {
     JoystickEvent event(action, leftStickX, leftStickY, rightStickX, rightStickY, leftTrigger, rightTrigger, hatX, hatY);
-    GKCamera::on_cam_rawinput_joystick(event);
+    IPCamera::on_cam_rawinput_joystick(event);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_loadConfig(JNIEnv *env, jclass clazz,
+Java_io_github_cylear_idolypride_addon_idolyprideHookMain_loadConfig(JNIEnv *env, jclass clazz,
                                                                    jstring config_json_str) {
     const auto configJsonStrChars = env->GetStringUTFChars(config_json_str, nullptr);
     const std::string configJson = configJsonStrChars;
@@ -115,7 +115,7 @@ Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_loadConfig(JNIEnv 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_chinosk_idolypride_localify_idolyprideHookMain_pluginCallbackLooper(JNIEnv *env,
+Java_io_github_cylear_idolypride_addon_idolyprideHookMain_pluginCallbackLooper(JNIEnv *env,
                                                                              jclass clazz) {
     IdolyprideLocal::Log::ToastLoop(env, clazz);
 }

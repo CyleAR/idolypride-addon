@@ -5,7 +5,7 @@
 #include "../BaseDefine.h"
 
 
-namespace GKCamera {
+namespace IPCamera {
 	BaseCamera::Camera baseCamera{};
     CameraMode cameraMode = CameraMode::FREE;
     FirstPersonRoll firstPersonRoll = FirstPersonRoll::ENABLE_ROLL;

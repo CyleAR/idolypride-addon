@@ -4,17 +4,12 @@ import io.github.cylear.idolypride.addon.ui.components.GakuGroupBox
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -24,7 +19,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.cylear.idolypride.addon.MainActivity
 import io.github.cylear.idolypride.addon.R
@@ -32,10 +26,7 @@ import io.github.cylear.idolypride.addon.getConfigState
 import io.github.cylear.idolypride.addon.models.BreastCollapsibleBoxViewModel
 import io.github.cylear.idolypride.addon.models.BreastCollapsibleBoxViewModelFactory
 import io.github.cylear.idolypride.addon.models.IdolyprideConfig
-import io.github.cylear.idolypride.addon.ui.components.base.CollapsibleBox
-import io.github.cylear.idolypride.addon.ui.components.GakuButton
 import io.github.cylear.idolypride.addon.ui.components.GakuSwitch
-import io.github.cylear.idolypride.addon.ui.components.GakuTextInput
 
 
 @Composable
@@ -47,8 +38,8 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
     val config = getConfigState(context, previewData)
     // val scrollState = rememberScrollState()
 
-    val breastParamViewModel: BreastCollapsibleBoxViewModel =
-        viewModel(factory = BreastCollapsibleBoxViewModelFactory(initiallyExpanded = false))
+    // val breastParamViewModel: BreastCollapsibleBoxViewModel =
+    //     viewModel(factory = BreastCollapsibleBoxViewModelFactory(initiallyExpanded = false))
     val keyBoardOptionsDecimal = remember {
         KeyboardOptions(keyboardType = KeyboardType.Decimal)
     }
@@ -65,6 +56,24 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     GakuSwitch(modifier, stringResource(R.string.enable_free_camera), checked = config.value.enableFreeCamera) {
                             v -> context?.onEnableFreeCameraChanged(v)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(6.dp))
+        }
+
+        item {
+            GakuGroupBox(modifier, stringResource(R.string.debug_settings)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    GakuSwitch(modifier, stringResource(R.string.text_hook_test_mode), checked = config.value.textTest) {
+                            v -> context?.onTextTestChanged(v)
+                    }
+                    GakuSwitch(modifier, stringResource(R.string.export_text), checked = config.value.dumpText) {
+                            v -> context?.onDumpTextChanged(v)
+                    }
+                    GakuSwitch(modifier, stringResource(R.string.replace_font), checked = config.value.replaceFont) {
+                            v -> context?.onReplaceFontChanged(v)
                     }
                 }
             }

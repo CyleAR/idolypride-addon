@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.22.1)
 # Since this is the top level CMakeLists.txt, the project name is also accessible
 # with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
 # build script scope).
-project(MarryAoi)
+project(IdolyprideAddon)
 
 add_compile_options(-fdeclspec)
 add_compile_options(-Wno-undefined-bool-conversion)
@@ -36,7 +36,7 @@ find_package(shadowhook REQUIRED CONFIG)
 # used in the AndroidManifest.xml file.
 add_library(${CMAKE_PROJECT_NAME} SHARED
     # List C/C++ source files with relative paths to this CMakeLists.txt.
-        libMarryAoi.cpp
+        libIdolyprideAddon.cpp
         IdolyprideAddon/Plugin.cpp
         IdolyprideAddon/Hook.cpp
         IdolyprideAddon/Log.cpp

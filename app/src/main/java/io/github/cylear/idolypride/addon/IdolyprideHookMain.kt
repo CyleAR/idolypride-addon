@@ -39,8 +39,8 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private lateinit var modulePath: String
     private var nativeLibLoadSuccess: Boolean
     private var alreadyInitialized = false
-    private val targetPackageName = "com.neowiz.game.idolypride"
-    private val nativeLibName = "MarryAoi"
+    private val targetPackageName = "game.qualiarts.idolypride"
+    private val nativeLibName = "IdolyprideAddon"
 
     private var iprDataInited = false
 
@@ -48,9 +48,9 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var externalFilesChecked: Boolean = false
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-        if (lpparam.packageName != targetPackageName) {
-            return
-        }
+//        if (lpparam.packageName != targetPackageName) {
+//            return
+//        }
 
         XposedHelpers.findAndHookMethod(
             "android.app.Activity",

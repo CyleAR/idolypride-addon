@@ -60,7 +60,7 @@ fun GakuTabRow(
                             Modifier
                                 .tabIndicatorOffset(tabPositions[pagerState.currentPage])
                                 .height(4.dp)
-                                .background(Color(0xFFFFA500))
+                                .background(Color(0xFF1428ff))
                                 .padding(horizontal = 4.dp)
                         )
                     }
@@ -80,7 +80,7 @@ fun GakuTabRow(
                             text = {
                                 Text(
                                     text = title,
-                                    color = if (pagerState.currentPage == index) Color(0xFFFFA500) else Color.Black
+                                    color = if (pagerState.currentPage == index) Color(0xFF1428ff) else Color.Black
                                 )
                             }
                         )

@@ -34,7 +34,7 @@ import io.github.cylear.idolypride.addon.hookUtils.FilesChecker.convertToString
 import io.github.cylear.idolypride.addon.mainUtils.json
 import io.github.cylear.idolypride.addon.models.AboutPageConfig
 import io.github.cylear.idolypride.addon.models.IdolyprideConfig
-import io.github.cylear.idolypride.addon.ui.components.GakuButton
+import io.github.cylear.idolypride.addon.ui.components.IPButton
 
 
 @Composable
@@ -80,13 +80,12 @@ fun AboutPage(modifier: Modifier = Modifier,
         item {
             Text(stringResource(R.string.about_about_title), fontSize = 24.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Text(stringResource(R.string.about_about_p1))
-            Text(stringResource(R.string.about_about_p2))
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(
                     start = 8.dp, end = 8.dp, top = 8.dp, bottom = 0.dp
                 )) {
-                GakuButton(text = "Github", modifier = modifier
+                IPButton(text = "Github", modifier = modifier
                     .weight(1f)
                     .sizeIn(maxWidth = 600.dp), onClick = {
                     context?.openUrl(contributorInfo.plugin_repo)
@@ -117,7 +116,7 @@ fun AboutPage(modifier: Modifier = Modifier,
                             verticalAlignment = Alignment.CenterVertically) {
                             Text(contributor.name, fontSize = 16.sp)
                             for (link in contributor.links) {
-                                GakuButton(text = link.name, modifier = modifier.height(40.dp),
+                                IPButton(text = link.name, modifier = modifier.height(40.dp),
                                     onClick = {
                                         context?.openUrl(link.link)
                                     })
@@ -136,13 +135,6 @@ fun AboutPage(modifier: Modifier = Modifier,
             NetworkSvgImage(
                 url = contributorInfo.contrib_img.plugin,
                 contentDescription = "plugin-contrib"
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(stringResource(R.string.translation_repository), fontSize = 16.sp)
-            NetworkSvgImage(
-                url = contributorInfo.contrib_img.translation,
-                contentDescription = "translation-contrib"
             )
         }
 

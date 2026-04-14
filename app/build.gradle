@@ -15,7 +15,7 @@ android {
         minSdk 29
         targetSdk 34
         versionCode 2
-        versionName "v1.2"
+        versionName "v1.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -73,7 +73,7 @@ android {
     applicationVariants.configureEach { variant ->
         variant.mergeAssetsProvider.configure { mergeAssetsTask ->
             mergeAssetsTask.doLast {
-                delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['idolypride-local/idolpride-adapted-translation-data/**',
+                delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['idolypride-local/idolypride-adapted-translation-data/**',
                                                                            'idolypride-local/IdolypridePreTranslation/**',
                                                                            'idolypride-local/raw/**']))
             }

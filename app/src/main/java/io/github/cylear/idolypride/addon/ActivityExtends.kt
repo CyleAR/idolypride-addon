@@ -27,7 +27,7 @@ fun <T> T.getConfigContent(): String where T : Activity {
     return if (configFile.exists()) {
         configFile.readText()
     } else {
-        Toast.makeText(this, "检测到第一次启动，初始化配置文件...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Initializing...", Toast.LENGTH_SHORT).show()
         configFile.writeText("{}")
         "{}"
     }
@@ -79,7 +79,7 @@ fun <T> T.loadConfig() where T : Activity, T : IHasConfigItems {
 fun <T> T.onClickStartGame() where T : Activity, T : IHasConfigItems {
     val intent = Intent().apply {
         setClassName(
-            "com.neowiz.game.idolypride",
+            "game.qualiarts.idolypride",
             "com.google.firebase.MessagingUnityPlayerActivity"
         )
         putExtra("iprData", getConfigContent())

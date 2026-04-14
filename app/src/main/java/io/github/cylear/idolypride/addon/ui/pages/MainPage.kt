@@ -59,8 +59,7 @@ fun MainUI(modifier: Modifier = Modifier, context: MainActivity? = null,
                 .padding(10.dp, 10.dp, 10.dp, 0.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            Text(text = "Idolypride Localify ${versionInfo[0]}", fontSize = 18.sp)
-            Text(text = "Assets version: ${versionInfo[1]}", fontSize = 13.sp)
+            Text(text = "Idolypride Addon ${versionInfo[0]}", fontSize = 18.sp)
 
             SettingsTabs(modifier, listOf(stringResource(R.string.about), stringResource(R.string.home),
                 stringResource(R.string.advanced_settings)),

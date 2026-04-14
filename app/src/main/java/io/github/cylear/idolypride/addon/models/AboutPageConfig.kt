@@ -8,7 +8,6 @@ data class AboutPageConfig(
     val main_contributors: List<MainContributors> = listOf(),
     val contrib_img: ContribImg = ContribImg(
         "https://contrib.rocks/image?repo=cylear/idolypride-addon",
-        "https://contrib.rocks/image?repo=cylear/IdolyprideTranslationData"
     )
 )
 
@@ -20,8 +19,7 @@ data class MainContributors(
 
 @Serializable
 data class ContribImg(
-    val plugin: String,
-    val translation: String
+    val plugin: String
 )
 
 @Serializable

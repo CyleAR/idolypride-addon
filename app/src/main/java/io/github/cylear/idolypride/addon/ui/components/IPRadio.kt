@@ -28,8 +28,8 @@ fun GakuRadio(
     fontSize: TextUnit = 14.sp,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (selected) Color(0xFFFFEEC3) else Color(0xFFF8F7F5)
-    val radioButtonColor = if (selected) Color(0xFFFF7601) else MaterialTheme.colorScheme.onSurface
+    val backgroundColor = if (selected) Color(0xFFF1F1EB) else Color(0xFFF8F7F5)
+    val radioButtonColor = if (selected) Color(0xFF1428FF) else MaterialTheme.colorScheme.onSurface
 
     Surface(
         shape = RoundedCornerShape(

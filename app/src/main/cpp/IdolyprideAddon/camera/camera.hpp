@@ -2,7 +2,7 @@
 #include "baseCamera.hpp"
 #include "Joystick/JoystickEvent.h"
 
-namespace GKCamera {
+namespace IPCamera {
     enum class CameraMode {
         FREE,
         FIRST_PERSON,
