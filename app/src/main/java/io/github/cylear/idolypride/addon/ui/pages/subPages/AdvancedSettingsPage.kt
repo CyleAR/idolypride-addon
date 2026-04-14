@@ -38,8 +38,8 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
     val config = getConfigState(context, previewData)
     // val scrollState = rememberScrollState()
 
-    // val breastParamViewModel: BreastCollapsibleBoxViewModel =
-    //     viewModel(factory = BreastCollapsibleBoxViewModelFactory(initiallyExpanded = false))
+    val breastParamViewModel: BreastCollapsibleBoxViewModel =
+        viewModel(factory = BreastCollapsibleBoxViewModelFactory(initiallyExpanded = false))
     val keyBoardOptionsDecimal = remember {
         KeyboardOptions(keyboardType = KeyboardType.Decimal)
     }
@@ -51,6 +51,17 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
         .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        item {
+            GakuGroupBox(modifier, stringResource(R.string.basic_settings)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    GakuSwitch(modifier, stringResource(R.string.enable_plugin), checked = config.value.enabled) {
+                        v -> context?.onEnabledChanged(v)
+                    }
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+        }
+
         item {
             GakuGroupBox(modifier, stringResource(R.string.camera_settings)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -66,18 +77,20 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
         item {
             GakuGroupBox(modifier, stringResource(R.string.debug_settings)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    GakuSwitch(modifier, stringResource(R.string.unlockAllLive), checked = config.value.unlockAllLive) {
+                        v -> context?.onUnlockAllLiveChanged(v)
+                    }
+                    GakuSwitch(modifier, "Login as iOS", checked = config.value.loginAsIOS) {
+                        v -> context?.onLoginAsIOSChanged(v)
+                    }
                     GakuSwitch(modifier, stringResource(R.string.text_hook_test_mode), checked = config.value.textTest) {
-                            v -> context?.onTextTestChanged(v)
+                        v -> context?.onTextTestChanged(v)
                     }
                     GakuSwitch(modifier, stringResource(R.string.export_text), checked = config.value.dumpText) {
-                            v -> context?.onDumpTextChanged(v)
-                    }
-                    GakuSwitch(modifier, stringResource(R.string.replace_font), checked = config.value.replaceFont) {
-                            v -> context?.onReplaceFontChanged(v)
+                        v -> context?.onDumpTextChanged(v)
                     }
                 }
             }
-
             Spacer(Modifier.height(6.dp))
         }
 

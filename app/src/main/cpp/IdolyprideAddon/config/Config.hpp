@@ -13,6 +13,7 @@ namespace IdolyprideLocal::Config {
     extern bool enableFreeCamera;
     extern int targetFrameRate;
     extern bool unlockAllLive;
+    extern bool loginAsIOS;
 
     extern bool enableLiveCustomeDress;
     extern std::string liveCustomeHeadId;
@@ -27,7 +28,7 @@ namespace IdolyprideLocal::Config {
     extern int reflectionQualityLevel;
     extern int lodQualityLevel;
 
-    extern bool enableBreastParam;
+    /* extern bool enableBreastParam;
     extern float bDamping;
     extern float bStiffness;
     extern float bSpring;
@@ -44,7 +45,7 @@ namespace IdolyprideLocal::Config {
     extern float bLimitYx;
     extern float bLimitYy;
     extern float bLimitZx;
-    extern float bLimitZy;
+    extern float bLimitZy; */
 
     void LoadConfig(const std::string& configStr);
 }

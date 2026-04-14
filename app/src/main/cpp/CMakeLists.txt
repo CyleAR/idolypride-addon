@@ -42,6 +42,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         IdolyprideAddon/Log.cpp
         IdolyprideAddon/Misc.cpp
         IdolyprideAddon/Local.cpp
+        IdolyprideAddon/MasterLocal.cpp
         IdolyprideAddon/camera/baseCamera.cpp
         IdolyprideAddon/camera/camera.cpp
         IdolyprideAddon/config/Config.cpp

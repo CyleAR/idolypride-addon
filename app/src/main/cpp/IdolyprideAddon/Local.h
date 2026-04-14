@@ -3,8 +3,10 @@
 
 #include <string>
 #include <filesystem>
+#include <unordered_set>
 
 namespace IdolyprideLocal::Local {
+    extern std::unordered_set<std::string> translatedText;
     std::filesystem::path GetBasePath();
     void LoadData();
     bool GetI18n(const std::string& key, std::string* ret);

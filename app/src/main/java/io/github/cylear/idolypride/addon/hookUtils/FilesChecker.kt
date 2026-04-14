@@ -37,6 +37,7 @@ object FilesChecker {
     }
 
     fun updateFiles() {
+        if (!this::filesDir.isInitialized) return
         if (filesUpdated) return
         filesUpdated = true
 
@@ -141,7 +142,7 @@ object FilesChecker {
         val pluginBasePath = File(filesDir, localizationFilesDir)
         val localFilesDir = File(pluginBasePath, "local-files")
 
-        val fontFile = File(localFilesDir, "pretendard-jp.otf")
+        val fontFile = File(localFilesDir, "gkamsZHFontMIX.otf")
         val resourceDir = File(localFilesDir, "resource")
         val genericTransDir = File(localFilesDir, "genericTrans")
         val genericTransFile = File(localFilesDir, "generic.json")

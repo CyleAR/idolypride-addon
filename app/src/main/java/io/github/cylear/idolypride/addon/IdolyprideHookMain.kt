@@ -169,7 +169,7 @@ class idolyprideHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                         requestConfig(app.applicationContext)
                     }
 
-                    FilesChecker.initDir(app.filesDir, modulePath)
+                    FilesChecker.initAndCheck(app.filesDir, modulePath)
                     initHook(
                         "${app.applicationInfo.nativeLibraryDir}/libil2cpp.so",
                         File(

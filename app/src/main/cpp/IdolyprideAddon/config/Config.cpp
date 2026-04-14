@@ -15,6 +15,7 @@ namespace IdolyprideLocal::Config {
     bool enableFreeCamera = false;
     int targetFrameRate = 0;
     bool unlockAllLive = false;
+    bool loginAsIOS = false;
 
     bool enableLiveCustomeDress = false;
     std::string liveCustomeHeadId = "";
@@ -28,7 +29,7 @@ namespace IdolyprideLocal::Config {
     int reflectionQualityLevel = 4;
     int lodQualityLevel = 4;
 
-    bool enableBreastParam = false;
+    /* bool enableBreastParam = false;
     float bDamping = 0.33f;
     float bStiffness = 0.08f;
     float bSpring = 1.0f;
@@ -45,7 +46,7 @@ namespace IdolyprideLocal::Config {
     float bLimitYx = 1.0f;
     float bLimitYy = 1.0f;
     float bLimitZx = 1.0f;
-    float bLimitZy = 1.0f;
+    float bLimitZy = 1.0f; */
 
     void LoadConfig(const std::string& configStr) {
         try {
@@ -63,6 +64,7 @@ namespace IdolyprideLocal::Config {
             GetConfigItem(targetFrameRate);
             GetConfigItem(enableFreeCamera);
             GetConfigItem(unlockAllLive);
+            GetConfigItem(loginAsIOS);
             GetConfigItem(enableLiveCustomeDress);
             GetConfigItem(liveCustomeHeadId);
             GetConfigItem(liveCustomeCostumeId);
@@ -73,7 +75,7 @@ namespace IdolyprideLocal::Config {
             GetConfigItem(maxBufferPixel);
             GetConfigItem(reflectionQualityLevel);
             GetConfigItem(lodQualityLevel);
-            GetConfigItem(enableBreastParam);
+            /* GetConfigItem(enableBreastParam);
             GetConfigItem(bDamping);
             GetConfigItem(bStiffness);
             GetConfigItem(bSpring);
@@ -90,7 +92,7 @@ namespace IdolyprideLocal::Config {
             GetConfigItem(bLimitYx);
             GetConfigItem(bLimitYy);
             GetConfigItem(bLimitZx);
-            GetConfigItem(bLimitZy);
+            GetConfigItem(bLimitZy); */
 
         }
         catch (std::exception& e) {

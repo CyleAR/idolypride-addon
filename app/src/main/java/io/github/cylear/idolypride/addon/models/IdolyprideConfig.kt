@@ -14,6 +14,7 @@ data class IdolyprideConfig (
     var enableFreeCamera: Boolean = false,
     var targetFrameRate: Int = 0,
     var unlockAllLive: Boolean = false,
+    var loginAsIOS: Boolean = false,
     var enableLiveCustomeDress: Boolean = false,
     var liveCustomeHeadId: String = "",
     var liveCustomeCostumeId: String = "",
@@ -26,7 +27,7 @@ data class IdolyprideConfig (
     var reflectionQualityLevel: Int = 4,  // 0~5
     var lodQualityLevel: Int = 4,  // 0~5
 
-    var enableBreastParam: Boolean = false,
+    /* var enableBreastParam: Boolean = false,
     var bDamping: Float = 0.33f,
     var bStiffness: Float = 0.08f,
     var bSpring: Float = 1.0f,
@@ -43,7 +44,7 @@ data class IdolyprideConfig (
     var bLimitYx: Float = 1.0f,
     var bLimitYy: Float = 1.0f,
     var bLimitZx: Float = 1.0f,
-    var bLimitZy: Float = 1.0f,
+    var bLimitZy: Float = 1.0f, */
 
     var pf: Boolean = false
 )

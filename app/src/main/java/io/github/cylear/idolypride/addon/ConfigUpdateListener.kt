@@ -33,8 +33,9 @@ interface ConfigListener {
     fun onLodQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onGameOrientationChanged(checkedId: Int)
     fun onDumpTextChanged(value: Boolean)
+    fun onLoginAsIOSChanged(value: Boolean)
 
-    fun onEnableBreastParamChanged(value: Boolean)
+    /* fun onEnableBreastParamChanged(value: Boolean)
     fun onBDampingChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBStiffnessChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBSpringChanged(s: CharSequence, start: Int, before: Int, count: Int)
@@ -52,7 +53,7 @@ interface ConfigListener {
     fun onBScaleChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBUseArmCorrectionChanged(value: Boolean)
     fun onBUseScaleChanged(value: Boolean)
-    fun onBClickPresetChanged(index: Int)
+    fun onBClickPresetChanged(index: Int) */
     fun onPCheckBuiltInAssetsChanged(value: Boolean)
     fun onPUseRemoteAssetsChanged(value: Boolean)
     fun onPCleanLocalAssetsChanged(value: Boolean)
@@ -118,6 +119,11 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
 
     override fun onDumpTextChanged(value: Boolean) {
         config.dumpText = value
+        saveConfig()
+    }
+
+    override fun onLoginAsIOSChanged(value: Boolean) {
+        config.loginAsIOS = value
         saveConfig()
     }
 
@@ -284,7 +290,7 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
         saveConfig()
     }
 
-    override fun onEnableBreastParamChanged(value: Boolean) {
+    /* override fun onEnableBreastParamChanged(value: Boolean) {
         config.enableBreastParam = value
         saveConfig()
         checkConfigAndUpdateView()
@@ -493,7 +499,7 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
 
         checkConfigAndUpdateView()
         saveConfig()
-    }
+    } */
 
     override fun onPCheckBuiltInAssetsChanged(value: Boolean) {
         programConfig.checkBuiltInAssets = value

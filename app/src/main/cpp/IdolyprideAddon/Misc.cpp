@@ -95,4 +95,14 @@ namespace IdolyprideLocal::Misc {
         return values[0];
     }
 
+    namespace StringFormat {
+        std::pair<std::string, std::string> split_once(const std::string& str, const std::string& delimiter) {
+            size_t pos = str.find(delimiter);
+            if (pos == std::string::npos) {
+                return {str, ""};
+            }
+            return {str.substr(0, pos), str.substr(pos + delimiter.length())};
+        }
+    }
+
 }
