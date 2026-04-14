@@ -288,45 +288,98 @@ namespace IdolyprideLocal::HookMain {
     }
 
     void* fontCache = nullptr;
+    bool hasTriedInitFont = false;
     void* GetReplaceFont() {
-        static auto fontName = Local::GetBasePath() / "local-files" / "gkamsZHFontMIX.otf";
-        if (!std::filesystem::exists(fontName)) {
+        static bool hasTriedLoad = false;
+        static void* replaceFont = nullptr;
+        if (hasTriedLoad) {
+            if (replaceFont && IsNativeObjectAlive(replaceFont)) return replaceFont;
+            return nullptr;
+        }
+        hasTriedLoad = true;
+
+        static auto bundlePath = Local::GetBasePath() / "local-files" / "gakumasassets";
+        if (!std::filesystem::exists(bundlePath)) {
+            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
+            debugLog << "gakumasassets not found\n";
             return nullptr;
         }
 
-        static auto CreateFontFromPath = reinterpret_cast<void (*)(void* self, Il2cppString* path)>(
-                Il2cppUtils::il2cpp_resolve_icall("UnityEngine.Font::Internal_CreateFontFromPath(UnityEngine.Font,System.String)")
+        static auto AssetBundleClass = Il2cppUtils::GetClass("UnityEngine.AssetBundleModule.dll", "UnityEngine", "AssetBundle");
+        if (!AssetBundleClass) {
+             AssetBundleClass = Il2cppUtils::GetClass("UnityEngine.dll", "UnityEngine", "AssetBundle");
+        }
+
+        if (AssetBundleClass) {
+            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
+            debugLog << "AssetBundle Methods:\n";
+            void* iter = nullptr;
+            while (auto method = UnityResolve::Invoke<Il2cppUtils::MethodInfo*>("il2cpp_class_get_methods", AssetBundleClass->address, &iter)) {
+                debugLog << " - " << method->name << " (args: " << (int)method->parameters_count << ")\n";
+            }
+        }
+
+        static auto AssetBundle_LoadFromFile_Internal = reinterpret_cast<void* (*)(UnityResolve::UnityType::String*, uint32_t, uint64_t)>(
+            Il2cppUtils::il2cpp_resolve_icall("UnityEngine.AssetBundle::LoadFromFile_Internal(System.String,System.UInt32,System.UInt64)")
         );
-        static auto Font_klass = Il2cppUtils::GetClass("UnityEngine.TextRenderingModule.dll",
-                                                       "UnityEngine", "Font");
-        static auto Font_ctor = Il2cppUtils::GetMethod("UnityEngine.TextRenderingModule.dll",
-                                                       "UnityEngine", "Font", ".ctor");
-        if (!CreateFontFromPath || !Font_klass || !Font_ctor) {
-            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt");
-            debugLog << "CreateFontFromPath failed to resolve\n";
-            if (Font_klass) {
-                void* iter = nullptr;
-                void* method;
-                while ((method = UnityResolve::Invoke<void*>("il2cpp_class_get_methods", Font_klass, &iter)) != nullptr) {
-                    const char* name = UnityResolve::Invoke<const char*>("il2cpp_method_get_name", method);
-                    debugLog << "Method: " << (name ? name : "null") << "\n";
+
+        if (!AssetBundle_LoadFromFile_Internal) {
+            AssetBundle_LoadFromFile_Internal = reinterpret_cast<void* (*)(UnityResolve::UnityType::String*, uint32_t, uint64_t)>(
+                Il2cppUtils::il2cpp_resolve_icall("UnityEngine.AssetBundle::LoadFromFile_Internal")
+            );
+        }
+
+        if (!AssetBundle_LoadFromFile_Internal) {
+            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
+            debugLog << "LoadFromFile_Internal icall not found\n";
+            return nullptr;
+        }
+
+        auto bundle = AssetBundle_LoadFromFile_Internal(UnityResolve::UnityType::String::New(bundlePath.string().c_str()), 0, 0);
+        if (!bundle) {
+            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
+            debugLog << "Failed to load bundle via LoadFromFile_Internal\n";
+            return nullptr;
+        }
+
+        static auto FontClass = Il2cppUtils::GetClass("UnityEngine.TextRenderingModule.dll", "UnityEngine", "Font");
+        static auto Font_Type = UnityResolve::Invoke<Il2cppUtils::Il2CppReflectionType*>("il2cpp_type_get_object", 
+            UnityResolve::Invoke<void*>("il2cpp_class_get_type", FontClass->address));
+
+        static auto AssetBundle_GetAllAssetNames = reinterpret_cast<UnityResolve::UnityType::Array<UnityResolve::UnityType::String*>* (*)(void*)>(
+            Il2cppUtils::il2cpp_resolve_icall("UnityEngine.AssetBundle::GetAllAssetNames()")
+        );
+
+        if (AssetBundle_GetAllAssetNames) {
+            auto names = AssetBundle_GetAllAssetNames(bundle);
+            if (names) {
+                std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
+                debugLog << "Bundle Asset Names:\n";
+                for (int i = 0; i < names->max_length; i++) {
+                    debugLog << " - " << names->At(i)->ToString() << "\n";
                 }
             }
+        }
+
+        static auto AssetBundle_LoadAsset = reinterpret_cast<void* (*)(void* _this, UnityResolve::UnityType::String* name, Il2cppUtils::Il2CppReflectionType* type)>(
+            Il2cppUtils::il2cpp_resolve_icall("UnityEngine.AssetBundle::LoadAsset_Internal(System.String,System.Type)")
+        );
+
+        if (!AssetBundle_LoadAsset) {
+            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
+            debugLog << "LoadAsset_Internal icall not found\n";
             return nullptr;
         }
 
-        if (fontCache) {
-            if (IsNativeObjectAlive(fontCache)) {
-                return fontCache;
-            }
+        auto fontPath = UnityResolve::UnityType::String::New("assets/fonts/gkamszhfontmix.otf");
+        replaceFont = AssetBundle_LoadAsset(bundle, fontPath, Font_Type);
+        
+        if (!replaceFont) {
+            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
+            debugLog << "replaceFont is null after LoadAsset\n";
         }
-
-        const auto newFont = Font_klass->New<void*>();
-        Font_ctor->Invoke<void>(newFont);
-
-        CreateFontFromPath(newFont, Il2cppString::New(fontName.string()));
-        fontCache = newFont;
-        return newFont;
+        
+        return replaceFont;
     }
 
     std::unordered_set<void*> updatedFontPtrs{};
