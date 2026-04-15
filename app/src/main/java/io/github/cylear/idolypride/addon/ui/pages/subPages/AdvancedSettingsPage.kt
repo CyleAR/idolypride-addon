@@ -36,7 +36,6 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
              bottomSpacerHeight: Dp = 120.dp,
              screenH: Dp = 1080.dp) {
     val config = getConfigState(context, previewData)
-    // val scrollState = rememberScrollState()
 
     val breastParamViewModel: BreastCollapsibleBoxViewModel =
         viewModel(factory = BreastCollapsibleBoxViewModelFactory(initiallyExpanded = false))
@@ -46,22 +45,10 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
 
     LazyColumn(modifier = modifier
         .sizeIn(maxHeight = screenH)
-        // .fillMaxHeight()
-        // .verticalScroll(scrollState)
         .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        item {
-            GakuGroupBox(modifier, stringResource(R.string.basic_settings)) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    GakuSwitch(modifier, stringResource(R.string.enable_plugin), checked = config.value.enabled) {
-                        v -> context?.onEnabledChanged(v)
-                    }
-                }
-            }
-            Spacer(Modifier.height(6.dp))
-        }
-
+        // ── 카메라 설정 ──────────────────────────────────────────────────────
         item {
             GakuGroupBox(modifier, stringResource(R.string.camera_settings)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -70,18 +57,15 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
                     }
                 }
             }
-
             Spacer(Modifier.height(6.dp))
         }
 
+        // ── 디버그 / 고급 설정 ───────────────────────────────────────────────
         item {
             GakuGroupBox(modifier, stringResource(R.string.debug_settings)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    GakuSwitch(modifier, stringResource(R.string.unlockAllLive), checked = config.value.unlockAllLive) {
-                        v -> context?.onUnlockAllLiveChanged(v)
-                    }
-                    GakuSwitch(modifier, "Login as iOS", checked = config.value.loginAsIOS) {
-                        v -> context?.onLoginAsIOSChanged(v)
+                    GakuSwitch(modifier, stringResource(R.string.useMasterDBTrans), checked = config.value.useMasterTrans) {
+                        v -> context?.onUseMasterTransChanged(v)
                     }
                     GakuSwitch(modifier, stringResource(R.string.text_hook_test_mode), checked = config.value.textTest) {
                         v -> context?.onTextTestChanged(v)
@@ -89,9 +73,34 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
                     GakuSwitch(modifier, stringResource(R.string.export_text), checked = config.value.dumpText) {
                         v -> context?.onDumpTextChanged(v)
                     }
+                    GakuSwitch(modifier, stringResource(R.string.force_export_resource), checked = config.value.forceExportResource) {
+                        v -> context?.onForceExportResourceChanged(v)
+                    }
+                    GakuSwitch(modifier, "Login as iOS", checked = config.value.loginAsIOS) {
+                        v -> context?.onLoginAsIOSChanged(v)
+                    }
                 }
             }
             Spacer(Modifier.height(6.dp))
+        }
+
+        // ── 테스트 모드: LIVE (dbgMode 전용) ─────────────────────────────────
+        item {
+            if (config.value.dbgMode) {
+                GakuGroupBox(modifier, stringResource(R.string.test_mode_live)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        GakuSwitch(modifier, stringResource(R.string.unlockAllLive),
+                            checked = config.value.unlockAllLive) {
+                                v -> context?.onUnlockAllLiveChanged(v)
+                        }
+                        GakuSwitch(modifier, stringResource(R.string.unlockAllLiveCostume),
+                            checked = config.value.unlockAllLiveCostume) {
+                                v -> context?.onUnlockAllLiveCostumeChanged(v)
+                        }
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+            }
         }
 
         item {

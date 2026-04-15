@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Update: 2024-3-2 22:11
  * Source: https://github.com/issuimo/UnityResolve.hpp
  * Author: github@issuimo
@@ -1375,16 +1375,9 @@ public:
             char16_t chars[1];
 
 			[[nodiscard]] auto ToString() const -> std::string {
-#if WINDOWS_MODE
-				if (IsBadReadPtr(this, sizeof(String))) return {};
-				if (IsBadReadPtr(m_firstChar, m_stringLength)) return {};
-#endif
 				if (!this) return {};
 				try {
-					// using convert_typeX = std::codecvt_utf8<wchar_t>;
-					// std::wstring_convert<convert_typeX> converterX;
-					// return converterX.to_bytes(m_firstChar);
-                    return IdolyprideLocal::Misc::ToUTF8(chars);
+                    return IdolyprideLocal::Misc::ToUTF8(std::u16string_view(chars, length));
 				}
 				catch (std::exception& e) {
 					std::cout << "String Invoke Error\n";

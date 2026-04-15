@@ -4,6 +4,7 @@ import io.github.cylear.idolypride.addon.ui.components.GakuGroupBox
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.cylear.idolypride.addon.MainActivity
 import io.github.cylear.idolypride.addon.R
@@ -38,8 +40,11 @@ import io.github.cylear.idolypride.addon.mainUtils.FileDownloader
 import io.github.cylear.idolypride.addon.models.IdolyprideConfig
 import io.github.cylear.idolypride.addon.models.ResourceCollapsibleBoxViewModel
 import io.github.cylear.idolypride.addon.models.ResourceCollapsibleBoxViewModelFactory
+import io.github.cylear.idolypride.addon.ui.components.GakuRadio
 import io.github.cylear.idolypride.addon.ui.components.GakuSwitch
 import io.github.cylear.idolypride.addon.ui.components.GakuTextInput
+import io.github.cylear.idolypride.addon.ui.components.IPButton
+import io.github.cylear.idolypride.addon.ui.components.base.CollapsibleBox
 import java.io.File
 
 
@@ -57,7 +62,6 @@ fun HomePage(modifier: Modifier = Modifier,
     val localResourceVersion by getProgramLocalResourceVersionState(context)
     val downloadErrorString by getProgramDownloadErrorStringState(context)
 
-    // val scrollState = rememberScrollState()
     val keyboardOptionsNumber = remember {
         KeyboardOptions(keyboardType = KeyboardType.Number)
     }
@@ -119,29 +123,32 @@ fun HomePage(modifier: Modifier = Modifier,
 
     LazyColumn(modifier = modifier
         .sizeIn(maxHeight = screenH)
-        // .fillMaxHeight()
-        // .verticalScroll(scrollState)
-        // .width(IntrinsicSize.Max)
         .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // ── 기본 설정 ──────────────────────────────────────────────────────────
         item {
             GakuGroupBox(modifier = modifier, stringResource(R.string.basic_settings)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     GakuSwitch(modifier, stringResource(R.string.enable_plugin), checked = config.value.enabled) {
                             v -> context?.onEnabledChanged(v)
                     }
+                    GakuSwitch(modifier, stringResource(R.string.replace_font), checked = config.value.replaceFont) {
+                            v -> context?.onReplaceFontChanged(v)
+                    }
                 }
             }
             Spacer(Modifier.height(6.dp))
         }
 
+        // ── 그래픽 설정 ────────────────────────────────────────────────────────
         item {
             GakuGroupBox(modifier = modifier, contentPadding = 0.dp, title = stringResource(R.string.graphic_settings)) {
                 LazyColumn(modifier = Modifier
                     .sizeIn(maxHeight = screenH),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // FPS
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
                         GakuTextInput(modifier = modifier
@@ -155,14 +162,126 @@ fun HomePage(modifier: Modifier = Modifier,
                             keyboardOptions = keyboardOptionsNumber)
                     }
 
+                    // 화면 방향
+                    item {
+                        Column(modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(stringResource(R.string.orientation_lock))
+                            Row(modifier = modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                val radioModifier = remember {
+                                    modifier
+                                        .height(40.dp)
+                                        .weight(1f)
+                                }
+                                GakuRadio(modifier = radioModifier,
+                                    text = stringResource(R.string.orientation_orig),
+                                    selected = config.value.gameOrientation == 0,
+                                    onClick = { context?.onGameOrientationChanged(0) })
+                                GakuRadio(modifier = radioModifier,
+                                    text = stringResource(R.string.orientation_portrait),
+                                    selected = config.value.gameOrientation == 1,
+                                    onClick = { context?.onGameOrientationChanged(1) })
+                                GakuRadio(modifier = radioModifier,
+                                    text = stringResource(R.string.orientation_landscape),
+                                    selected = config.value.gameOrientation == 2,
+                                    onClick = { context?.onGameOrientationChanged(2) })
+                            }
+                        }
+                    }
+
                     item {
                         HorizontalDivider(
                             thickness = 1.dp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
                         )
                     }
+
+                    // 커스텀 그래픽 설정
+                    item {
+                        GakuSwitch(modifier.padding(start = 8.dp, end = 8.dp),
+                            stringResource(R.string.useCustomeGraphicSettings),
+                            checked = config.value.useCustomeGraphicSettings) {
+                                v -> context?.onUseCustomeGraphicSettingsChanged(v)
+                        }
+
+                        CollapsibleBox(modifier = modifier,
+                            expandState = config.value.useCustomeGraphicSettings,
+                            collapsedHeight = 0.dp,
+                            showExpand = false
+                        ) {
+                            LazyColumn(modifier = modifier
+                                .padding(8.dp)
+                                .sizeIn(maxHeight = screenH)
+                                .fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                // 프리셋 버튼
+                                item {
+                                    Row(modifier = modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        val btnMod = remember { modifier.height(40.dp).weight(1f) }
+                                        IPButton(modifier = btnMod, text = stringResource(R.string.max_high),  onClick = { context?.onChangePresetQuality(4) })
+                                        IPButton(modifier = btnMod, text = stringResource(R.string.very_high), onClick = { context?.onChangePresetQuality(3) })
+                                        IPButton(modifier = btnMod, text = stringResource(R.string.hign),      onClick = { context?.onChangePresetQuality(2) })
+                                        IPButton(modifier = btnMod, text = stringResource(R.string.middle),    onClick = { context?.onChangePresetQuality(1) })
+                                        IPButton(modifier = btnMod, text = stringResource(R.string.low),       onClick = { context?.onChangePresetQuality(0) })
+                                    }
+                                }
+                                // RenderScale + QualityLevel
+                                item {
+                                    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        val fieldMod = remember { modifier.height(45.dp).weight(1f) }
+                                        GakuTextInput(modifier = fieldMod, fontSize = 14f,
+                                            value = config.value.renderScale.toString(),
+                                            onValueChange = { c -> context?.onRenderScaleChanged(c, 0, 0, 0)},
+                                            label = { Text(stringResource(R.string.renderscale)) },
+                                            keyboardOptions = keyBoardOptionsDecimal)
+                                        GakuTextInput(modifier = fieldMod, fontSize = 14f,
+                                            value = config.value.qualitySettingsLevel.toString(),
+                                            onValueChange = { c -> context?.onQualitySettingsLevelChanged(c, 0, 0, 0)},
+                                            label = { Text("QualityLevel (1/1/2/3/5)") },
+                                            keyboardOptions = keyboardOptionsNumber)
+                                    }
+                                }
+                                // VolumeIndex + MaxBufferPixel
+                                item {
+                                    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        val fieldMod = remember { modifier.height(45.dp).weight(1f) }
+                                        GakuTextInput(modifier = fieldMod, fontSize = 14f,
+                                            value = config.value.volumeIndex.toString(),
+                                            onValueChange = { c -> context?.onVolumeIndexChanged(c, 0, 0, 0)},
+                                            label = { Text("VolumeIndex (0/1/2/3/4)") },
+                                            keyboardOptions = keyboardOptionsNumber)
+                                        GakuTextInput(modifier = fieldMod, fontSize = 14f,
+                                            value = config.value.maxBufferPixel.toString(),
+                                            onValueChange = { c -> context?.onMaxBufferPixelChanged(c, 0, 0, 0)},
+                                            label = { Text("MaxBufferPixel (1024/1440/2538/3384/8190)", fontSize = 10.sp) },
+                                            keyboardOptions = keyboardOptionsNumber)
+                                    }
+                                }
+                                // ReflectionLevel + LodLevel
+                                item {
+                                    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        val fieldMod = remember { modifier.height(45.dp).weight(1f) }
+                                        GakuTextInput(modifier = fieldMod, fontSize = 14f,
+                                            value = config.value.reflectionQualityLevel.toString(),
+                                            onValueChange = { c -> context?.onReflectionQualityLevelChanged(c, 0, 0, 0)},
+                                            label = { Text("ReflectionLevel (0~5)") },
+                                            keyboardOptions = keyboardOptionsNumber)
+                                        GakuTextInput(modifier = fieldMod, fontSize = 14f,
+                                            value = config.value.lodQualityLevel.toString(),
+                                            onValueChange = { c -> context?.onLodQualityLevelChanged(c, 0, 0, 0)},
+                                            label = { Text("LOD Level (0~5)") },
+                                            keyboardOptions = keyboardOptionsNumber)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
+            Spacer(Modifier.height(6.dp))
         }
 
         item {

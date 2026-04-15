@@ -34,6 +34,8 @@ interface ConfigListener {
     fun onGameOrientationChanged(checkedId: Int)
     fun onDumpTextChanged(value: Boolean)
     fun onLoginAsIOSChanged(value: Boolean)
+    fun onUseMasterTransChanged(value: Boolean)
+    fun onUnlockAllLiveCostumeChanged(value: Boolean)
 
     /* fun onEnableBreastParamChanged(value: Boolean)
     fun onBDampingChanged(s: CharSequence, start: Int, before: Int, count: Int)
@@ -134,6 +136,16 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
 
     override fun onUnlockAllLiveChanged(value: Boolean) {
         config.unlockAllLive = value
+        saveConfig()
+    }
+
+    override fun onUnlockAllLiveCostumeChanged(value: Boolean) {
+        config.unlockAllLiveCostume = value
+        saveConfig()
+    }
+
+    override fun onUseMasterTransChanged(value: Boolean) {
+        config.useMasterTrans = value
         saveConfig()
     }
 

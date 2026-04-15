@@ -204,6 +204,7 @@ namespace IdolyprideLocal::Local {
         static auto genericFile = GetBasePath() / "local-files" / "generic.json";
         static auto genericDir = GetBasePath() / "local-files" / "genericTrans";
 
+        Log::InfoFmt("Loading localization from: %s", localizationFile.c_str());
         if (!std::filesystem::is_regular_file(localizationFile)) {
             Log::ErrorFmt("localizationFile: %s not found.", localizationFile.c_str());
             return;
@@ -211,6 +212,7 @@ namespace IdolyprideLocal::Local {
         LoadJsonDataToMap(localizationFile, i18nData, true);
         Log::InfoFmt("%ld localization items loaded.", i18nData.size());
 
+        Log::InfoFmt("Loading generic from: %s", genericFile.c_str());
         LoadJsonDataToMap(genericFile, genericText, true);
         if (std::filesystem::exists(genericDir) || std::filesystem::is_directory(genericDir)) {
             for (const auto& entry : std::filesystem::recursive_directory_iterator(genericDir)) {

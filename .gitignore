@@ -18,4 +18,5 @@ local.properties
 /.kotlin
 /app/debug
 /app/release
-notes/
+/notes
+/platform-tools

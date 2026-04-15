@@ -271,161 +271,261 @@ namespace IdolyprideLocal::HookMain {
         return ret;
     }
 
-    DEFINE_HOOK(UnityResolve::UnityType::String*, QualiArts_I18n_GetOrDefault, (UnityResolve::UnityType::String* key, UnityResolve::UnityType::String* defaultKey, void* method)) {
-        auto ret = QualiArts_I18n_GetOrDefault_Orig(key, defaultKey, method);
-
-        if (key != nullptr) {
-            std::string keyStr = key->ToString();
-            std::string translated;
-            if (Local::GetI18n(keyStr, &translated)) {
-                return UnityResolve::UnityType::String::New(translated);
-            } else {
-                Local::DumpI18nItem(keyStr, ret != nullptr ? ret->ToString() : "");
+    namespace {
+        std::string HexDump(const void* ptr, size_t size) {
+            const unsigned char* p = static_cast<const unsigned char*>(ptr);
+            std::string res;
+            char buf[4];
+            for (size_t i = 0; i < size; ++i) {
+                snprintf(buf, sizeof(buf), "%02X ", p[i]);
+                res += buf;
             }
+            return res;
         }
+    }
 
+    DEFINE_HOOK(UnityResolve::UnityType::String*, QualiArts_I18n_Get, (void* self, UnityResolve::UnityType::String* key, void* method)) {
+        auto ret = QualiArts_I18n_Get_Orig(self, key, method);
+        try {
+            if (key != nullptr) {
+                // Log::DebugFmt("QualiArts_I18n_Get hex: %s", HexDump(key, 32).c_str());
+                std::string keyStr = key->ToString();
+                std::string translated;
+                if (!keyStr.empty() && Local::GetI18n(keyStr, &translated)) {
+                    return UnityResolve::UnityType::String::New(translated);
+                }
+            }
+        } catch (...) {
+            // Ignore
+        }
         return ret;
     }
 
-    void* fontCache = nullptr;
-    bool hasTriedInitFont = false;
-    void* GetReplaceFont() {
-        static bool hasTriedLoad = false;
-        static void* replaceFont = nullptr;
-        if (hasTriedLoad) {
-            if (replaceFont && IsNativeObjectAlive(replaceFont)) return replaceFont;
-            return nullptr;
-        }
-        hasTriedLoad = true;
-
-        static auto bundlePath = Local::GetBasePath() / "local-files" / "gakumasassets";
-        if (!std::filesystem::exists(bundlePath)) {
-            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
-            debugLog << "gakumasassets not found\n";
-            return nullptr;
-        }
-
-        static auto AssetBundleClass = Il2cppUtils::GetClass("UnityEngine.AssetBundleModule.dll", "UnityEngine", "AssetBundle");
-        if (!AssetBundleClass) {
-             AssetBundleClass = Il2cppUtils::GetClass("UnityEngine.dll", "UnityEngine", "AssetBundle");
-        }
-
-        if (AssetBundleClass) {
-            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
-            debugLog << "AssetBundle Methods:\n";
-            void* iter = nullptr;
-            while (auto method = UnityResolve::Invoke<Il2cppUtils::MethodInfo*>("il2cpp_class_get_methods", AssetBundleClass->address, &iter)) {
-                debugLog << " - " << method->name << " (args: " << (int)method->parameters_count << ")\n";
-            }
-        }
-
-        static auto AssetBundle_LoadFromFile_Internal = reinterpret_cast<void* (*)(UnityResolve::UnityType::String*, uint32_t, uint64_t)>(
-            Il2cppUtils::il2cpp_resolve_icall("UnityEngine.AssetBundle::LoadFromFile_Internal(System.String,System.UInt32,System.UInt64)")
-        );
-
-        if (!AssetBundle_LoadFromFile_Internal) {
-            AssetBundle_LoadFromFile_Internal = reinterpret_cast<void* (*)(UnityResolve::UnityType::String*, uint32_t, uint64_t)>(
-                Il2cppUtils::il2cpp_resolve_icall("UnityEngine.AssetBundle::LoadFromFile_Internal")
-            );
-        }
-
-        if (!AssetBundle_LoadFromFile_Internal) {
-            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
-            debugLog << "LoadFromFile_Internal icall not found\n";
-            return nullptr;
-        }
-
-        auto bundle = AssetBundle_LoadFromFile_Internal(UnityResolve::UnityType::String::New(bundlePath.string().c_str()), 0, 0);
-        if (!bundle) {
-            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
-            debugLog << "Failed to load bundle via LoadFromFile_Internal\n";
-            return nullptr;
-        }
-
-        static auto FontClass = Il2cppUtils::GetClass("UnityEngine.TextRenderingModule.dll", "UnityEngine", "Font");
-        static auto Font_Type = UnityResolve::Invoke<Il2cppUtils::Il2CppReflectionType*>("il2cpp_type_get_object", 
-            UnityResolve::Invoke<void*>("il2cpp_class_get_type", FontClass->address));
-
-        static auto AssetBundle_GetAllAssetNames = reinterpret_cast<UnityResolve::UnityType::Array<UnityResolve::UnityType::String*>* (*)(void*)>(
-            Il2cppUtils::il2cpp_resolve_icall("UnityEngine.AssetBundle::GetAllAssetNames()")
-        );
-
-        if (AssetBundle_GetAllAssetNames) {
-            auto names = AssetBundle_GetAllAssetNames(bundle);
-            if (names) {
-                std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
-                debugLog << "Bundle Asset Names:\n";
-                for (int i = 0; i < names->max_length; i++) {
-                    debugLog << " - " << names->At(i)->ToString() << "\n";
+    DEFINE_HOOK(UnityResolve::UnityType::String*, QualiArts_I18n_GetOrDefault, (void* self, UnityResolve::UnityType::String* key, UnityResolve::UnityType::String* defaultKey, void* method)) {
+        auto ret = QualiArts_I18n_GetOrDefault_Orig(self, key, defaultKey, method);
+        try {
+            if (key != nullptr) {
+                Log::DebugFmt("QualiArts_I18n_GetOrDefault hex: %s", HexDump(key, 32).c_str());
+                std::string keyStr = key->ToString();
+                std::string translated;
+                if (!keyStr.empty() && Local::GetI18n(keyStr, &translated)) {
+                    return UnityResolve::UnityType::String::New(translated);
                 }
             }
+        } catch (...) {
+            // Ignore
+        }
+        return ret;
+    }
+
+
+
+    void* fontCache = nullptr;
+    void* tmpFontCache = nullptr;
+
+    void* GetReplaceFont(bool asTMP = false) {
+        if (asTMP && tmpFontCache) {
+            if (IsNativeObjectAlive(tmpFontCache)) return tmpFontCache;
+        }
+        if (!asTMP && fontCache) {
+            if (IsNativeObjectAlive(fontCache)) return fontCache;
         }
 
-        static auto AssetBundle_LoadAsset = reinterpret_cast<void* (*)(void* _this, UnityResolve::UnityType::String* name, Il2cppUtils::Il2CppReflectionType* type)>(
-            Il2cppUtils::il2cpp_resolve_icall("UnityEngine.AssetBundle::LoadAsset_Internal(System.String,System.Type)")
-        );
-
-        if (!AssetBundle_LoadAsset) {
-            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
-            debugLog << "LoadAsset_Internal icall not found\n";
+        static auto fontName = Local::GetBasePath() / "local-files" / "gkamsZHFontMIX.otf";
+        if (!std::filesystem::exists(fontName)) {
+            Log::ErrorFmt("GetReplaceFont: Font file not found: %s", fontName.c_str());
             return nullptr;
         }
 
-        auto fontPath = UnityResolve::UnityType::String::New("assets/fonts/gkamszhfontmix.otf");
-        replaceFont = AssetBundle_LoadAsset(bundle, fontPath, Font_Type);
-        
-        if (!replaceFont) {
-            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
-            debugLog << "replaceFont is null after LoadAsset\n";
+        static void (*CreateFontP)(void* self, Il2cppString* path) = nullptr;
+        static const char* icall_variants[] = {
+            "UnityEngine.Font::Internal_CreateFontFromPath(UnityEngine.Font,System.String)",
+            "UnityEngine.Font::Internal_CreateFont(UnityEngine.Font,System.String)",
+        };
+
+        if (!CreateFontP) {
+            for (auto variant : icall_variants) {
+                CreateFontP = reinterpret_cast<void (*)(void*, Il2cppString*)>(
+                    Il2cppUtils::il2cpp_resolve_icall(variant)
+                );
+                if (CreateFontP) break;
+            }
+        }
+
+        static UnityResolve::Class* Font_klass = nullptr;
+        static UnityResolve::Method* Font_ctor = nullptr;
+        if (!Font_klass) {
+            Font_klass = Il2cppUtils::GetClass("UnityEngine.TextRenderingModule.dll", "UnityEngine", "Font");
+            if (Font_klass) Font_ctor = Font_klass->Get<UnityResolve::Method>(".ctor");
+        }
+
+        if (!CreateFontP || !Font_klass || !Font_ctor) {
+             Log::Error("GetReplaceFont: Failed to resolve Font creation methods.");
+             return nullptr;
+        }
+
+        const auto newFont = Font_klass->New<void*>();
+        Font_ctor->Invoke<void>(newFont);
+        CreateFontP(newFont, Il2cppString::New(fontName.string()));
+        fontCache = newFont;
+
+        // Create TMP Font Asset from raw font
+        static UnityResolve::Class* TMP_FontAsset_klass = nullptr;
+        if (!TMP_FontAsset_klass) {
+            const char* assemblies[] = {"Unity.TextMeshPro.dll", "Unity.TextMeshPro", "TextMeshPro-Runtime"};
+            for (auto asm_name : assemblies) {
+                TMP_FontAsset_klass = Il2cppUtils::GetClass(asm_name, "TMPro", "TMP_FontAsset");
+                if (TMP_FontAsset_klass) break;
+            }
+        }
+
+        if (TMP_FontAsset_klass) {
+            static bool mtdsLogged = false;
+            if (!mtdsLogged) {
+                Log::Info("GetReplaceFont: Listing TMP_FontAsset methods...");
+                for (auto mtd : TMP_FontAsset_klass->methods) {
+                    if (mtd && !mtd->name.empty()) {
+                        Log::InfoFmt(" - %s (Args: %d)", mtd->name.c_str(), (int)mtd->args.size());
+                    }
+                }
+                mtdsLogged = true;
+            }
+            
+            // Try to find the correct CreateFontAsset variant
+            static UnityResolve::Method* CreateFontAsset = nullptr;
+            if (!CreateFontAsset) {
+                CreateFontAsset = TMP_FontAsset_klass->Get<UnityResolve::Method>("CreateFontAsset", {"UnityEngine.Font"});
+                if (!CreateFontAsset) CreateFontAsset = TMP_FontAsset_klass->Get<UnityResolve::Method>("CreateFontAsset", {"UnityEngine.Font", "*", "*", "*", "*", "*", "*"}); 
+            }
+
+            if (CreateFontAsset) {
+                if (CreateFontAsset->args.size() == 1) {
+                    tmpFontCache = CreateFontAsset->Invoke<void*>(nullptr, newFont);
+                } else {
+                    Log::InfoFmt("GetReplaceFont: CreateFontAsset found but has %d args, need more research.", (int)CreateFontAsset->args.size());
+                }
+            } else {
+                Log::Error("GetReplaceFont: CreateFontAsset method not found by name.");
+            }
+        } else {
+            Log::Error("GetReplaceFont: TMP_FontAsset class not found in any common assembly.");
+        }
+
+        if (tmpFontCache) {
+            Log::Info("GetReplaceFont: Successfully created TMP_FontAsset.");
+            static auto set_name = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine", "Object", "set_name");
+            if (set_name) set_name->Invoke<void>(tmpFontCache, Il2cppString::New("KoreanFallbackFont"));
+        }
+
+        return asTMP ? tmpFontCache : fontCache;
+    }
+
+    void GlobalInjectFallbacks(void* koreanTMP) {
+        static bool globallyInjected = false;
+        if (globallyInjected) return;
+
+        static UnityResolve::Class* settingsKlass = nullptr;
+        if (!settingsKlass) {
+            const char* assemblies[] = {"Unity.TextMeshPro.dll", "Unity.TextMeshPro", "TextMeshPro-Runtime"};
+            for (auto asm_name : assemblies) {
+                settingsKlass = Il2cppUtils::GetClass(asm_name, "TMPro", "TMP_Settings");
+                if (settingsKlass) break;
+            }
         }
         
-        return replaceFont;
+        if (!settingsKlass) {
+            Log::Error("GlobalInjectFallbacks: TMP_Settings class not found.");
+            return;
+        }
+
+        // Try to get static field fallbackFontAssets
+        static auto globalFallbackField = settingsKlass->Get<UnityResolve::Field>("fallbackFontAssets");
+        if (globalFallbackField) {
+            void* globalList = nullptr;
+            globalFallbackField->GetValue(&globalList);
+            if (globalList) {
+                Il2cppUtils::Tools::CSListEditor editor(globalList);
+                editor.Add(koreanTMP);
+                Log::Info("GlobalInjectFallbacks: Successfully added Korean to TMP_Settings.fallbackFontAssets");
+                globallyInjected = true;
+            } else {
+                Log::Error("GlobalInjectFallbacks: fallbackFontAssets list is null via field.");
+            }
+        } else {
+            Log::Error("GlobalInjectFallbacks: fallbackFontAssets field not found.");
+        }
     }
 
     std::unordered_set<void*> updatedFontPtrs{};
+
     void UpdateFont(void* TMP_Textself) {
         if (!Config::replaceFont) return;
-        static auto get_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
-                                                      "TMPro", "TMP_Text", "get_font");
-        static auto set_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
-                                                      "TMPro", "TMP_Text", "set_font");
-        static auto get_name = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll",
-                                                      "UnityEngine", "Object", "get_name");
 
-        static auto set_sourceFontFile = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
-                                                                "TMP_FontAsset", "set_sourceFontFile");
-        static auto UpdateFontAssetData = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
-                                                                 "TMP_FontAsset", "UpdateFontAssetData");
+        static auto get_font = Il2cppUtils::GetMethod(
+            "Unity.TextMeshPro.dll", "TMPro", "TMP_Text", "get_font");
+        static auto get_name = Il2cppUtils::GetMethod(
+            "UnityEngine.CoreModule.dll", "UnityEngine", "Object", "get_name");
+        
+        static auto fontAssetKlass = Il2cppUtils::GetClass("Unity.TextMeshPro.dll", "TMPro", "TMP_FontAsset");
+        static auto get_fallbackTable = fontAssetKlass ? fontAssetKlass->Get<UnityResolve::Method>("get_fallbackFontAssetTable") : nullptr;
+        static auto fallbackField = fontAssetKlass ? fontAssetKlass->Get<UnityResolve::Field>("fallbackFontAssetTable") : nullptr;
 
         auto fontAsset = get_font->Invoke<void*>(TMP_Textself);
-        if (!fontAsset) {
-            return;
+        if (!fontAsset) return;
+
+        // Diagnostic Logging
+        auto fontAssetNameString = get_name->Invoke<Il2cppString*>(fontAsset);
+        std::string fontName = fontAssetNameString != nullptr ? fontAssetNameString->ToString() : "null";
+        Log::DebugFmt("UpdateFont: Processing %s", fontName.c_str());
+
+        auto koreanTMP = GetReplaceFont(true);
+        if (!koreanTMP) {
+             Log::Error("UpdateFont: Failed to get/create Korean TMP Font Asset.");
+             return;
         }
 
-        auto fontAssetName = get_name->Invoke<Il2cppString*>(fontAsset);
-
-        auto newFont = GetReplaceFont();
-        if (!newFont) {
-            std::ofstream debugLog(Local::GetBasePath() / "font_err.txt", std::ios::app);
-            debugLog << "newFont is nullptr\n";
-            return;
+        static bool globalDone = false;
+        if (!globalDone) {
+            GlobalInjectFallbacks(koreanTMP);
+            globalDone = true;
         }
 
-        set_sourceFontFile->Invoke<void>(fontAsset, newFont);
-        if (!updatedFontPtrs.contains(fontAsset)) {
-            updatedFontPtrs.emplace(fontAsset);
-            UpdateFontAssetData->Invoke<void>(fontAsset);
+        // Try Local Injection
+        void* fallbackList = nullptr;
+        if (get_fallbackTable) fallbackList = get_fallbackTable->Invoke<void*>(fontAsset);
+        if (!fallbackList && fallbackField) {
+            fallbackList = *reinterpret_cast<void**>((uintptr_t)fontAsset + fallbackField->offset);
+            Log::DebugFmt("UpdateFont: Found fallback list via field for %s", fontName.c_str());
         }
-        if (updatedFontPtrs.size() > 200) updatedFontPtrs.clear();
-        
-        set_font->Invoke<void>(TMP_Textself, nullptr);
-        set_font->Invoke<void>(TMP_Textself, fontAsset);
+
+        if (fallbackList) {
+            Il2cppUtils::Tools::CSListEditor<void*> editor(fallbackList);
+            // Check count first
+            int count = editor.get_Count();
+            bool alreadyHas = false;
+            for (int i = 0; i < count; i++) {
+                if (editor.get_Item(i) == koreanTMP) {
+                    alreadyHas = true;
+                    break;
+                }
+            }
+            if (!alreadyHas) {
+                editor.Add(koreanTMP);
+                Log::InfoFmt("UpdateFont: Successfully added Korean fallback to %s (Table size: %d -> %d)", 
+                    fontName.c_str(), count, count + 1);
+            }
+        } else {
+             Log::InfoFmt("UpdateFont: Could not find fallback list for %s", fontName.c_str());
+        }
     }
 
-    DEFINE_HOOK(void, TMP_Text_PopulateTextBackingArray, (void* self, UnityResolve::UnityType::String* text, int start, int length)) {
+    // ??????????????????????????????????????????????????????????????????????????
+    DEFINE_HOOK(void, TMP_Text_PopulateTextBackingArray, (void* self, Il2cppString* text, int start, int length, void* mtd)) {
         if (!text) {
-            return TMP_Text_PopulateTextBackingArray_Orig(self, text, start, length);
+            return TMP_Text_PopulateTextBackingArray_Orig(self, text, start, length, mtd);
         }
+
+        UpdateFont(self);
 
         static auto Substring = Il2cppUtils::GetMethod("mscorlib.dll", "System", "String", "Substring",
                                                        {"System.Int32", "System.Int32"});
@@ -434,117 +534,99 @@ namespace IdolyprideLocal::HookMain {
         std::string transText;
         if (Local::GetGenericText(origText, &transText)) {
             const auto newText = UnityResolve::UnityType::String::New(transText);
-            UpdateFont(self);
-            return TMP_Text_PopulateTextBackingArray_Orig(self, newText, 0, newText->length);
+            return TMP_Text_PopulateTextBackingArray_Orig(self, newText, 0, newText->length, mtd);
         }
 
         if (Config::textTest) {
             const auto newText = UnityResolve::UnityType::String::New("[TP]" + text->ToString());
-            UpdateFont(self);
-            return TMP_Text_PopulateTextBackingArray_Orig(self, newText, start, length + 4);
+            return TMP_Text_PopulateTextBackingArray_Orig(self, newText, start, length + 4, mtd);
         }
 
-        TMP_Text_PopulateTextBackingArray_Orig(self, text, start, length);
+        TMP_Text_PopulateTextBackingArray_Orig(self, text, start, length, mtd);
     }
+
 
     DEFINE_HOOK(void, TMP_Text_set_text, (void* self, Il2cppString* value, void* mtd)) {
         if (!value) {
             return TMP_Text_set_text_Orig(self, value, mtd);
         }
+
+        Log::DebugFmt("TMP_Text_set_text hit! text: %s", value->ToString().c_str());
+        UpdateFont(self);
+
         const std::string origText = value->ToString();
         std::string transText;
         if (Local::GetGenericText(origText, &transText)) {
             const auto newText = UnityResolve::UnityType::String::New(transText);
-            UpdateFont(self);
-            return TMP_Text_set_text_Orig(self, newText, mtd);
-        }
-        if (Config::textTest) {
-            const auto newText = UnityResolve::UnityType::String::New("[TT]" + origText + "가나다");
-            UpdateFont(self);
             return TMP_Text_set_text_Orig(self, newText, mtd);
         }
         
         TMP_Text_set_text_Orig(self, value, mtd);
     }
 
+    DEFINE_HOOK(void, UnityEngine_UI_Text_set_text, (void* self, Il2cppString* value, void* mtd)) {
+        if (!value) {
+            return UnityEngine_UI_Text_set_text_Orig(self, value, mtd);
+        }
+        Log::DebugFmt("UnityEngine_UI_Text_set_text hit! text: %s", value->ToString().c_str());
+        // For standard UI Text, we might need a different font update logic if TMP logic doesn't apply.
+        // But let's log it first.
+        UnityEngine_UI_Text_set_text_Orig(self, value, mtd);
+    }
+
+    DEFINE_HOOK(void, TMP_Text_OnEnable, (void* self, void* mtd)) {
+        Log::Debug("TMP_Text_OnEnable hit!");
+        UpdateFont(self);
+        TMP_Text_OnEnable_Orig(self, mtd);
+    }
+
     DEFINE_HOOK(void, TMP_Text_SetText_1, (void* self, Il2cppString* sourceText, void* mtd)) {
         if (!sourceText) {
             return TMP_Text_SetText_1_Orig(self, sourceText, mtd);
         }
+
+        UpdateFont(self);
+
         const std::string origText = sourceText->ToString();
         std::string transText;
         if (Local::GetGenericText(origText, &transText)) {
             const auto newText = UnityResolve::UnityType::String::New(transText);
-            UpdateFont(self);
             return TMP_Text_SetText_1_Orig(self, newText, mtd);
         }
         if (Config::textTest) {
             TMP_Text_SetText_1_Orig(self, UnityResolve::UnityType::String::New("[T1]" + origText), mtd);
+            return;
         }
-        else {
-            TMP_Text_SetText_1_Orig(self, sourceText, mtd);
-        }
-        UpdateFont(self);
+        
+        TMP_Text_SetText_1_Orig(self, sourceText, mtd);
     }
+
 
     DEFINE_HOOK(void, TMP_Text_SetText_2, (void* self, Il2cppString* sourceText, bool syncTextInputBox, void* mtd)) {
         if (!sourceText) {
             return TMP_Text_SetText_2_Orig(self, sourceText, syncTextInputBox, mtd);
         }
+
+        UpdateFont(self);
+
         const std::string origText = sourceText->ToString();
         std::string transText;
         if (Local::GetGenericText(origText, &transText)) {
             const auto newText = UnityResolve::UnityType::String::New(transText);
-            UpdateFont(self);
             return TMP_Text_SetText_2_Orig(self, newText, syncTextInputBox, mtd);
         }
         if (Config::textTest) {
             TMP_Text_SetText_2_Orig(self, UnityResolve::UnityType::String::New("[TS]" + sourceText->ToString()), syncTextInputBox, mtd);
+            return;
         }
-        else {
-            TMP_Text_SetText_2_Orig(self, sourceText, syncTextInputBox, mtd);
-        }
-        UpdateFont(self);
+
+        TMP_Text_SetText_2_Orig(self, sourceText, syncTextInputBox, mtd);
     }
+
 
     DEFINE_HOOK(void, TextMeshProUGUI_Awake, (void* self, void* method)) {
-        const auto TMP_Text_klass = Il2cppUtils::GetClass("Unity.TextMeshPro.dll",
-                                                                     "TMPro", "TMP_Text");
-        const auto get_Text_method = TMP_Text_klass->Get<UnityResolve::Method>("get_text");
-        const auto set_Text_method = TMP_Text_klass->Get<UnityResolve::Method>("set_text");
-        const auto currText = get_Text_method->Invoke<UnityResolve::UnityType::String*>(self);
-        if (currText) {
-            std::string transText;
-            if (Local::GetGenericText(currText->ToString(), &transText)) {
-                if (Config::textTest) {
-                    set_Text_method->Invoke<void>(self, UnityResolve::UnityType::String::New("[TA]" + transText));
-                }
-                else {
-                    set_Text_method->Invoke<void>(self, UnityResolve::UnityType::String::New(transText));
-                }
-            }
-        }
-
-        UpdateFont(self);
         TextMeshProUGUI_Awake_Orig(self, method);
-    }
-
-    DEFINE_HOOK(void, UIText_set_text, (void* self, Il2cppString* value)) {
-        if (!value) {
-            return UIText_set_text_Orig(self, value);
-        }
-        const std::string origText = value->ToString();
-        std::string transText;
-        if (Local::GetGenericText(origText, &transText)) {
-            const auto newText = UnityResolve::UnityType::String::New(transText);
-            return UIText_set_text_Orig(self, newText);
-        }
-        if (Config::textTest) {
-            UIText_set_text_Orig(self, UnityResolve::UnityType::String::New("[UI]" + origText));
-        }
-        else {
-            UIText_set_text_Orig(self, value);
-        }
+        UpdateFont(self);
     }
 
     DEFINE_HOOK(void, TMP_Text_SetCharArray, (void* self, void* charArray, int start, int count, void* mtd)) {
@@ -596,12 +678,43 @@ namespace IdolyprideLocal::HookMain {
 
     void StartInjectFunctions() {
         const auto hookInstaller = Plugin::GetInstance().GetHookInstaller();
-        UnityResolve::Init(xdl_open(hookInstaller->m_il2cppLibraryPath.c_str(), RTLD_NOW), UnityResolve::Mode::Il2Cpp);
+        void* handle = xdl_open(hookInstaller->m_il2cppLibraryPath.c_str(), RTLD_NOW);
+        UnityResolve::Init(handle, UnityResolve::Mode::Il2Cpp);
 
+        struct TargetMethod {
+            const char* assembly;
+            const char* nameSpace;
+            const char* className;
+        };
 
-        ADD_HOOK(QualiArts_I18n_GetOrDefault,
-                 Il2cppUtils::GetMethodPointer("idolypride.Runtime.dll", "QualiArts",
-                                               "I18n", "GetOrDefault"));
+        const TargetMethod targets[] = {
+                {"quaunity-ui.Runtime.dll", "Qua.UI", "I18n"},
+                {"Assembly-CSharp.dll", "QualiArts", "I18n"},
+                {"quaunity-api.Runtime.dll", "QualiArts", "I18n"},
+                {"idolypride.Runtime.dll", "QualiArts", "I18n"}
+        };
+
+        void* get_mtd_ptr = nullptr;
+        void* get_def_mtd_ptr = nullptr;
+
+        for (const auto& target : targets) {
+            get_mtd_ptr = Il2cppUtils::GetMethodPointer(target.assembly, target.nameSpace, target.className, "Get");
+            if (get_mtd_ptr) {
+                get_def_mtd_ptr = Il2cppUtils::GetMethodPointer(target.assembly, target.nameSpace, target.className, "GetOrDefault");
+                Log::InfoFmt("I18n found in %s (%s.%s)", target.assembly, target.nameSpace, target.className);
+                break;
+            }
+        }
+
+        if (get_mtd_ptr) {
+            ADD_HOOK(QualiArts_I18n_Get, get_mtd_ptr);
+            if (get_def_mtd_ptr) {
+                ADD_HOOK(QualiArts_I18n_GetOrDefault, get_def_mtd_ptr);
+            }
+        } else {
+            Log::Error("QualiArts.I18n not found in any targeted assemblies.");
+        }
+
 
         ADD_HOOK(AssetBundle_LoadAssetAsync, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.AssetBundle::LoadAssetAsync_Internal(System.String,System.Type)"));
@@ -631,7 +744,15 @@ namespace IdolyprideLocal::HookMain {
             auto uiTextPtr = Il2cppUtils::GetMethodPointer("UnityEngine.UI.dll", "UnityEngine.UI",
                                                            "Text", "set_text");
             if (uiTextPtr) {
-                ADD_HOOK(UIText_set_text, uiTextPtr);
+                ADD_HOOK(UnityEngine_UI_Text_set_text, uiTextPtr);
+            }
+        }
+
+        {
+            auto tmpOnEnablePtr = Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
+                                                                 "TMP_Text", "OnEnable");
+            if (tmpOnEnablePtr) {
+                ADD_HOOK(TMP_Text_OnEnable, tmpOnEnablePtr);
             }
         }
 
