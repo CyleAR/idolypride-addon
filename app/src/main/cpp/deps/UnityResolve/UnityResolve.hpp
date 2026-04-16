@@ -6,7 +6,7 @@
 
 #ifndef UNITYRESOLVE_HPP
 #define UNITYRESOLVE_HPP
-#define WINDOWS_MODE 0 // 如果需要请改为 1 | 1 if you need
+#define WINDOWS_MODE 0 // 如果?�要�??�为 1 | 1 if you need
 #define ANDROID_MODE 1
 #define LINUX_MODE 0
  /* Never
@@ -44,8 +44,8 @@
 #endif
 
 #include "xdl.h"
-#include "../../IdolyprideAddon/Log.h"
-#include "../../IdolyprideAddon/Misc.hpp"
+#include "../../HoshimiLocalify/Log.h"
+#include "../../HoshimiLocalify/Misc.hpp"
 
 class UnityResolve final {
 public:
@@ -137,10 +137,10 @@ public:
 		}
 
 		/**
-		 * \brief 获取类所有实例
-		 * \tparam T 返回数组类型
-		 * \param type 类
-		 * \return 返回实例指针数组
+		 * \brief ?�取类�??�实�?
+		 * \tparam T 返回?�组类型
+		 * \param type �?
+		 * \return 返回实例?�针?�组
 		 */
 		template <typename T>
 		auto FindObjectsByType() -> std::vector<T> {
@@ -296,7 +296,7 @@ public:
 			ForeachAssembly();
 
 			if (Get("UnityEngine.dll") && (!Get("UnityEngine.CoreModule.dll") || !Get("UnityEngine.PhysicsModule.dll"))) {
-				// 兼容某些游戏 (如生死狙击2)
+				// ?��??�些游戏 (如生死狙??)
 				for (const std::vector<std::string> names = { "UnityEngine.CoreModule.dll", "UnityEngine.PhysicsModule.dll" }; const auto name : names) {
 					const auto ass = Get("UnityEngine.dll");
 					const auto assembly = new Assembly{ .address = ass->address, .name = name, .file = ass->file, .classes = ass->classes };
@@ -509,11 +509,11 @@ public:
 #endif
 
 	/**
-	 * \brief 调用dll函数
+	 * \brief 调用dll?�数
 	 * \tparam Return 返回类型 (必须)
-	 * \tparam Args 参数类型 (可以忽略)
-	 * \param funcName dll导出函数名称
-	 * \param args 参数
+	 * \tparam Args ?�数类型 (??��忽略)
+	 * \param funcName dll导出?�数?�称
+	 * \param args ?�数
 	 * \return 模板类型
 	 */
 	template <typename Return, typename... Args>
@@ -521,7 +521,7 @@ public:
 		static std::mutex mutex{};
 		std::lock_guard   lock(mutex);
 
-		// 检查函数是否已经获取地址, 没有则自动获取
+		// 检?�函?�是??��经获?�地?�, 没有?�自?�获??
 #if WINDOWS_MODE
 		if (!address_.contains(funcName) || !address_[funcName]) address_[funcName] = static_cast<void*>(GetProcAddress(static_cast<HMODULE>(hmodule_), funcName.c_str()));
 #elif  ANDROID_MODE || LINUX_MODE
@@ -557,7 +557,7 @@ public:
 
 private:
 	static auto ForeachAssembly() -> void {
-		// 遍历程序集
+		// ?�历程序??
 		if (mode_ == Mode::Il2Cpp) {
 			size_t     nrofassemblies = 0;
 			const auto assemblies = Invoke<void**>("il2cpp_domain_get_assemblies", pDomain, &nrofassemblies);
@@ -591,7 +591,7 @@ private:
 	}
 
 	static auto ForeachClass(Assembly* assembly, void* image) -> void {
-		// 遍历类
+		// ?�历�?
 		if (mode_ == Mode::Il2Cpp) {
 			const auto count = Invoke<int>("il2cpp_image_get_class_count", image);
 			for (auto i = 0; i < count; i++) {
@@ -648,7 +648,7 @@ private:
 	}
 
 	static auto ForeachFields(Class* klass, void* pKlass) -> void {
-		// 遍历成员
+		// ?�历?�员
 		if (mode_ == Mode::Il2Cpp) {
 			void* iter = nullptr;
 			void* field;
@@ -680,7 +680,7 @@ private:
 	}
 
 	static auto ForeachMethod(Class* klass, void* pKlass) -> void {
-		// 遍历方法
+		// ?�历?�法
 		if (mode_ == Mode::Il2Cpp) {
 			void* iter = nullptr;
 			void* method;
@@ -1377,11 +1377,11 @@ public:
 			[[nodiscard]] auto ToString() const -> std::string {
 				if (!this) return {};
 				try {
-                    return IdolyprideLocal::Misc::ToUTF8(std::u16string_view(chars, length));
+                    return HoshimiLocal::Misc::ToUTF8(std::u16string_view(chars, length));
 				}
 				catch (std::exception& e) {
 					std::cout << "String Invoke Error\n";
-                    IdolyprideLocal::Log::ErrorFmt("String Invoke Error: %s", e.what());
+                    HoshimiLocal::Log::ErrorFmt("String Invoke Error: %s", e.what());
 					return {};
 				}
 			}

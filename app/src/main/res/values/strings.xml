@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Idolypride Addon</string>
-    <string name="idolypride_addon">Idolypride Addon</string>
+    <string name="app_name">Hoshimi Localify</string>
+    <string name="hoshimi_localify">Hoshimi Localify</string>
     <string name="enable_plugin">Enable Plugin (Not Hot Reloadable)</string>
     <string name="replace_font">Replace Font</string>
     <string name="enable_free_camera">Enable Free Camera</string>

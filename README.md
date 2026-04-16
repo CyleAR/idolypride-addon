@@ -1,6 +1,6 @@
-# idolypride-addon
+# HoshimiLocalify
 
-- An xposed plugin for Idolypride
+- An xposed plugin for Idolypride (Hoshimi Localify)
 - This repository is irrelevant to Idolm@ster and BandaiNamco
 - Use this plugin at your own risk
 

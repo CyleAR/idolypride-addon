@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.IdolyprideAddon" parent="@style/Theme.MaterialComponents.Light.NoActionBar" >
+    <style name="Theme.HoshimiLocalify" parent="@style/Theme.MaterialComponents.Light.NoActionBar" >
         <item name="android:windowBackground">@drawable/splash_style</item>
     </style>
 
-    <style name="Theme.IdolyprideAddon.NoDisplay" parent="@style/Theme.MaterialComponents.Light.NoActionBar" >
+    <style name="Theme.HoshimiLocalify.NoDisplay" parent="@style/Theme.MaterialComponents.Light.NoActionBar" >
         <item name="android:windowFrame">@null</item>
         <!-- 设置是否可滑动 -->
         <item name="android:windowIsFloating">true</item>

@@ -11,7 +11,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.IdolyprideAddon"
+        android:theme="@style/Theme.HoshimiLocalify"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
@@ -20,7 +20,7 @@
             android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="IDOLYPRIDE Addon" />
+            android:value="Hoshimi Localify" />
         <meta-data
             android:name="xposedminversion"
             android:value="53" />
@@ -35,7 +35,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.IdolyprideAddon">
+            android:theme="@style/Theme.HoshimiLocalify">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -46,7 +46,7 @@
         <activity
             android:name=".TranslucentActivity"
             android:exported="true"
-            android:theme="@style/Theme.IdolyprideAddon.NoDisplay">
+            android:theme="@style/Theme.HoshimiLocalify.NoDisplay">
 
         </activity>
 

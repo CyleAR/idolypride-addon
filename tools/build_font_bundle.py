@@ -41,8 +41,8 @@ script_dir = Path(__file__).resolve().parent
 repo_root  = script_dir.parent
 
 OTF_CANDIDATES = [
-    repo_root / "app/src/main/assets/idolypride-local/local-files/gkamsZHFontMIX.otf",
-    repo_root / "app/build/intermediates/assets/debug/mergeDebugAssets/idolypride-local/local-files/gkamsZHFontMIX.otf",
+    repo_root / "app/src/main/assets/hoshimi-local/local-files/gkamsZHFontMIX.otf",
+    repo_root / "app/build/intermediates/assets/debug/mergeDebugAssets/hoshimi-local/local-files/gkamsZHFontMIX.otf",
     script_dir / "gkamsZHFontMIX.otf",
 ]
 
@@ -341,7 +341,7 @@ print()
 if success:
     sz = out_bundle.stat().st_size
     print(f"[SUCCESS] {out_bundle}  ({sz:,} bytes)")
-    game_dir = f"/data/user/0/{GAME_PKG}/files/idolypride-local/local-files"
+    game_dir = f"/data/user/0/{GAME_PKG}/files/hoshimi-local/local-files"
     print()
     print("Deploy:")
     print(f"  adb push \"{out_bundle}\" /sdcard/Download/korean_font.bundle")

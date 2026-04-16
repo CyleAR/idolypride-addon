@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Idolypride Addon"
+rootProject.name = "Hoshimi Localify"
 include ':app'
