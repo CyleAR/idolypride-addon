@@ -50,6 +50,7 @@ extern "C"
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM* vm, void* reserved) {
     g_javaVM = vm;
+    HoshimiLocal::Log::Info("libHoshimiLocalify JNI_OnLoad called.");
     return JNI_VERSION_1_6;
 }
 
@@ -57,14 +58,17 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_io_github_cylear_hoshimi_localify_HoshimiHookMain_initHook(JNIEnv *env, jclass clazz, jstring targetLibraryPath,
                                                                  jstring localizationFilesDir) {
+    HoshimiLocal::Log::Info("libHoshimiLocalify initHook called.");
     g_hoshimiHookMainClass = clazz;
     showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
 
     const auto targetLibraryPathChars = env->GetStringUTFChars(targetLibraryPath, nullptr);
     const std::string targetLibraryPathStr = targetLibraryPathChars;
+    HoshimiLocal::Log::InfoFmt("targetLibraryPath: %s", targetLibraryPathStr.c_str());
 
     const auto localizationFilesDirChars = env->GetStringUTFChars(localizationFilesDir, nullptr);
     const std::string localizationFilesDirCharsStr = localizationFilesDirChars;
+    HoshimiLocal::Log::InfoFmt("localizationFilesDir: %s", localizationFilesDirCharsStr.c_str());
 
     auto& plugin = HoshimiLocal::Plugin::GetInstance();
     plugin.InstallHook(std::make_unique<AndroidHookInstaller>(targetLibraryPathStr, localizationFilesDirCharsStr));

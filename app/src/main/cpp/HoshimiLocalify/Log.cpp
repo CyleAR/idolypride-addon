@@ -7,7 +7,7 @@
 #include <queue>
 
 extern JavaVM* g_javaVM;
-extern jclass g_idolyprideHookMainClass;
+extern jclass g_hoshimiHookMainClass;
 extern jmethodID showToastMethodId;
 
 #define GetParamStringResult(name)\
@@ -84,7 +84,7 @@ namespace HoshimiLocal::Log {
                 return;
             }
 
-            jclass& kotlinClass = g_idolyprideHookMainClass;
+            jclass& kotlinClass = g_hoshimiHookMainClass;
             if (!kotlinClass) {
                 g_javaVM->DetachCurrentThread();
                 return;

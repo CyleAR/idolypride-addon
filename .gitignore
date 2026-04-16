@@ -20,3 +20,4 @@ local.properties
 /app/release
 /notes
 /platform-tools
+development_guide.md

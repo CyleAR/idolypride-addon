@@ -321,13 +321,9 @@ namespace HoshimiLocal::HookMain {
 
 
     void* fontCache = nullptr;
-    void* tmpFontCache = nullptr;
 
-    void* GetReplaceFont(bool asTMP = false) {
-        if (asTMP && tmpFontCache) {
-            if (IsNativeObjectAlive(tmpFontCache)) return tmpFontCache;
-        }
-        if (!asTMP && fontCache) {
+    void* GetReplaceFont() {
+        if (fontCache) {
             if (IsNativeObjectAlive(fontCache)) return fontCache;
         }
 
@@ -368,92 +364,9 @@ namespace HoshimiLocal::HookMain {
         Font_ctor->Invoke<void>(newFont);
         CreateFontP(newFont, Il2cppString::New(fontName.string()));
         fontCache = newFont;
+        Log::Info("GetReplaceFont: Successfully loaded raw UnityEngine.Font.");
 
-        // Create TMP Font Asset from raw font
-        static UnityResolve::Class* TMP_FontAsset_klass = nullptr;
-        if (!TMP_FontAsset_klass) {
-            const char* assemblies[] = {"Unity.TextMeshPro.dll", "Unity.TextMeshPro", "TextMeshPro-Runtime"};
-            for (auto asm_name : assemblies) {
-                TMP_FontAsset_klass = Il2cppUtils::GetClass(asm_name, "TMPro", "TMP_FontAsset");
-                if (TMP_FontAsset_klass) break;
-            }
-        }
-
-        if (TMP_FontAsset_klass) {
-            static bool mtdsLogged = false;
-            if (!mtdsLogged) {
-                Log::Info("GetReplaceFont: Listing TMP_FontAsset methods...");
-                for (auto mtd : TMP_FontAsset_klass->methods) {
-                    if (mtd && !mtd->name.empty()) {
-                        Log::InfoFmt(" - %s (Args: %d)", mtd->name.c_str(), (int)mtd->args.size());
-                    }
-                }
-                mtdsLogged = true;
-            }
-            
-            // Try to find the correct CreateFontAsset variant
-            static UnityResolve::Method* CreateFontAsset = nullptr;
-            if (!CreateFontAsset) {
-                CreateFontAsset = TMP_FontAsset_klass->Get<UnityResolve::Method>("CreateFontAsset", {"UnityEngine.Font"});
-                if (!CreateFontAsset) CreateFontAsset = TMP_FontAsset_klass->Get<UnityResolve::Method>("CreateFontAsset", {"UnityEngine.Font", "*", "*", "*", "*", "*", "*"}); 
-            }
-
-            if (CreateFontAsset) {
-                if (CreateFontAsset->args.size() == 1) {
-                    tmpFontCache = CreateFontAsset->Invoke<void*>(nullptr, newFont);
-                } else {
-                    Log::InfoFmt("GetReplaceFont: CreateFontAsset found but has %d args, need more research.", (int)CreateFontAsset->args.size());
-                }
-            } else {
-                Log::Error("GetReplaceFont: CreateFontAsset method not found by name.");
-            }
-        } else {
-            Log::Error("GetReplaceFont: TMP_FontAsset class not found in any common assembly.");
-        }
-
-        if (tmpFontCache) {
-            Log::Info("GetReplaceFont: Successfully created TMP_FontAsset.");
-            static auto set_name = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine", "Object", "set_name");
-            if (set_name) set_name->Invoke<void>(tmpFontCache, Il2cppString::New("KoreanFallbackFont"));
-        }
-
-        return asTMP ? tmpFontCache : fontCache;
-    }
-
-    void GlobalInjectFallbacks(void* koreanTMP) {
-        static bool globallyInjected = false;
-        if (globallyInjected) return;
-
-        static UnityResolve::Class* settingsKlass = nullptr;
-        if (!settingsKlass) {
-            const char* assemblies[] = {"Unity.TextMeshPro.dll", "Unity.TextMeshPro", "TextMeshPro-Runtime"};
-            for (auto asm_name : assemblies) {
-                settingsKlass = Il2cppUtils::GetClass(asm_name, "TMPro", "TMP_Settings");
-                if (settingsKlass) break;
-            }
-        }
-        
-        if (!settingsKlass) {
-            Log::Error("GlobalInjectFallbacks: TMP_Settings class not found.");
-            return;
-        }
-
-        // Try to get static field fallbackFontAssets
-        static auto globalFallbackField = settingsKlass->Get<UnityResolve::Field>("fallbackFontAssets");
-        if (globalFallbackField) {
-            void* globalList = nullptr;
-            globalFallbackField->GetValue(&globalList);
-            if (globalList) {
-                Il2cppUtils::Tools::CSListEditor editor(globalList);
-                editor.Add(koreanTMP);
-                Log::Info("GlobalInjectFallbacks: Successfully added Korean to TMP_Settings.fallbackFontAssets");
-                globallyInjected = true;
-            } else {
-                Log::Error("GlobalInjectFallbacks: fallbackFontAssets list is null via field.");
-            }
-        } else {
-            Log::Error("GlobalInjectFallbacks: fallbackFontAssets field not found.");
-        }
+        return fontCache;
     }
 
     std::unordered_set<void*> updatedFontPtrs{};
@@ -463,59 +376,35 @@ namespace HoshimiLocal::HookMain {
 
         static auto get_font = Il2cppUtils::GetMethod(
             "Unity.TextMeshPro.dll", "TMPro", "TMP_Text", "get_font");
+        static auto set_font = Il2cppUtils::GetMethod(
+            "Unity.TextMeshPro.dll", "TMPro", "TMP_Text", "set_font");
         static auto get_name = Il2cppUtils::GetMethod(
             "UnityEngine.CoreModule.dll", "UnityEngine", "Object", "get_name");
-        
-        static auto fontAssetKlass = Il2cppUtils::GetClass("Unity.TextMeshPro.dll", "TMPro", "TMP_FontAsset");
-        static auto get_fallbackTable = fontAssetKlass ? fontAssetKlass->Get<UnityResolve::Method>("get_fallbackFontAssetTable") : nullptr;
-        static auto fallbackField = fontAssetKlass ? fontAssetKlass->Get<UnityResolve::Field>("fallbackFontAssetTable") : nullptr;
+
+        // Hijack Strategy (since CreateFontAsset failed)
+        static auto set_sourceFontFile = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro", "TMP_FontAsset", "set_sourceFontFile");
+        static auto set_atlasPopulationMode = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro", "TMP_FontAsset", "set_atlasPopulationMode");
+        static auto ClearFontAssetData = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro", "TMP_FontAsset", "ClearFontAssetData", {"System.Boolean"});
 
         auto fontAsset = get_font->Invoke<void*>(TMP_Textself);
         if (!fontAsset) return;
 
-        // Diagnostic Logging
-        auto fontAssetNameString = get_name->Invoke<Il2cppString*>(fontAsset);
-        std::string fontName = fontAssetNameString != nullptr ? fontAssetNameString->ToString() : "null";
-        Log::DebugFmt("UpdateFont: Processing %s", fontName.c_str());
-
-        auto koreanTMP = GetReplaceFont(true);
-        if (!koreanTMP) {
-             Log::Error("UpdateFont: Failed to get/create Korean TMP Font Asset.");
-             return;
-        }
-
-        static bool globalDone = false;
-        if (!globalDone) {
-            GlobalInjectFallbacks(koreanTMP);
-            globalDone = true;
-        }
-
-        // Try Local Injection
-        void* fallbackList = nullptr;
-        if (get_fallbackTable) fallbackList = get_fallbackTable->Invoke<void*>(fontAsset);
-        if (!fallbackList && fallbackField) {
-            fallbackList = *reinterpret_cast<void**>((uintptr_t)fontAsset + fallbackField->offset);
-            Log::DebugFmt("UpdateFont: Found fallback list via field for %s", fontName.c_str());
-        }
-
-        if (fallbackList) {
-            Il2cppUtils::Tools::CSListEditor<void*> editor(fallbackList);
-            // Check count first
-            int count = editor.get_Count();
-            bool alreadyHas = false;
-            for (int i = 0; i < count; i++) {
-                if (editor.get_Item(i) == koreanTMP) {
-                    alreadyHas = true;
-                    break;
+        if (!updatedFontPtrs.contains(fontAsset)) {
+            auto rawFont = GetReplaceFont();
+            if (rawFont) {
+                if (set_sourceFontFile) set_sourceFontFile->Invoke<void>(fontAsset, rawFont);
+                if (set_atlasPopulationMode) set_atlasPopulationMode->Invoke<void>(fontAsset, 1); // Dynamic
+                
+                if (ClearFontAssetData) {
+                    ClearFontAssetData->Invoke<void>(fontAsset, true); // true = setDirty
                 }
+
+                updatedFontPtrs.emplace(fontAsset);
+
+                auto fontAssetNameString = get_name->Invoke<Il2cppString*>(fontAsset);
+                std::string fontName = fontAssetNameString != nullptr ? fontAssetNameString->ToString() : "null";
+                Log::InfoFmt("HoshimiLocal-Native: Hijacked font asset %s (Source swapped & Forced Dynamic)", fontName.c_str());
             }
-            if (!alreadyHas) {
-                editor.Add(koreanTMP);
-                Log::InfoFmt("UpdateFont: Successfully added Korean fallback to %s (Table size: %d -> %d)", 
-                    fontName.c_str(), count, count + 1);
-            }
-        } else {
-             Log::InfoFmt("UpdateFont: Could not find fallback list for %s", fontName.c_str());
         }
     }
 
@@ -783,8 +672,8 @@ namespace HoshimiLocal::HookMain {
     // 77 2640 5000
 
     DEFINE_HOOK(int, il2cpp_init, (const char* domain_name)) {
+        HoshimiLocal::Log::InfoFmt("il2cpp_init called with domain: %s", domain_name);
         const auto ret = il2cpp_init_Orig(domain_name);
-        // InjectFunctions();
 
         Log::Info("Waiting for config...");
 

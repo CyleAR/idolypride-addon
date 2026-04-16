@@ -1,4 +1,4 @@
-package io.github.cylear.hoshimi.localify
+﻿package io.github.cylear.hoshimi.localify
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -48,9 +48,9 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var externalFilesChecked: Boolean = false
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-//        if (lpparam.packageName != targetPackageName) {
-//            return
-//        }
+        if (lpparam.packageName != targetPackageName) {
+            return
+        }
 
         XposedHelpers.findAndHookMethod(
             "android.app.Activity",
@@ -78,25 +78,25 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     val motionEvent = param.args[0] as MotionEvent
                     val action = motionEvent.action
 
-                    // �?��?�的X?�Y�?
+                    // 藥?몙?녺쉪X?똜饔?
                     val leftStickX = motionEvent.getAxisValue(MotionEvent.AXIS_X)
                     val leftStickY = motionEvent.getAxisValue(MotionEvent.AXIS_Y)
 
-                    // ?�摇?�的X?�Y�?
+                    // ?녔몙?녺쉪X?똜饔?
                     val rightStickX = motionEvent.getAxisValue(MotionEvent.AXIS_Z)
                     val rightStickY = motionEvent.getAxisValue(MotionEvent.AXIS_RZ)
 
-                    // �?��??
+                    // 藥?돰??
                     val leftTrigger = motionEvent.getAxisValue(MotionEvent.AXIS_LTRIGGER)
 
-                    // ?�扳??
+                    // ?녔돰??
                     val rightTrigger = motionEvent.getAxisValue(MotionEvent.AXIS_RTRIGGER)
 
-                    // ?�字??
+                    // ?곩춻??
                     val hatX = motionEvent.getAxisValue(MotionEvent.AXIS_HAT_X)
                     val hatY = motionEvent.getAxisValue(MotionEvent.AXIS_HAT_Y)
 
-                    // 处理?�杆?�扳?�事�?
+                    // 鸚꾤릤?뉑쓥?뚧돰?뷰틟餓?
                     joystickEvent(
                         action,
                         leftStickX,
@@ -305,7 +305,7 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         @JvmStatic
         external fun loadConfig(configJsonStr: String)
 
-        // Toast快速切?�内�?
+        // Toast恙ラ잌늾?℡냵若?
         private var toast: Toast? = null
 
         @JvmStatic
@@ -315,11 +315,11 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             if (context != null) {
                 val handler = Handler(Looper.getMainLooper())
                 handler.post {
-                    // ?�消之前??Toast
+                    // ?뽪텋阿뗥뎺??Toast
                     toast?.cancel()
-                    // ?�建?�的 Toast
+                    // ?쎾뻠?곁쉪 Toast
                     toast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
-                    // 展示?�的 Toast
+                    // 掠뺟ㅊ?곁쉪 Toast
                     toast?.show()
                 }
             }

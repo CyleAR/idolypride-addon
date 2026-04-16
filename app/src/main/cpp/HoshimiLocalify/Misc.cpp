@@ -10,13 +10,71 @@ extern JavaVM* g_javaVM;
 
 namespace HoshimiLocal::Misc {
     std::u16string ToUTF16(const std::string_view& str) {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
-        return utf16conv.from_bytes(str.data(), str.data() + str.size());
+        std::u16string result;
+        result.reserve(str.size());
+        for (size_t i = 0; i < str.size(); ) {
+            uint32_t cp = 0;
+            unsigned char c = (unsigned char)str[i++];
+            if (c < 0x80) cp = c;
+            else if (c < 0xE0) {
+                if (i < str.size()) cp = ((c & 0x1F) << 6) | ((unsigned char)str[i++] & 0x3F);
+            }
+            else if (c < 0xF0) {
+                if (i + 1 < str.size()) {
+                    cp = ((c & 0x0F) << 12) | (((unsigned char)str[i++] & 0x3F) << 6);
+                    cp |= ((unsigned char)str[i++] & 0x3F);
+                }
+            }
+            else {
+                if (i + 2 < str.size()) {
+                    cp = ((c & 0x07) << 18) | (((unsigned char)str[i++] & 0x3F) << 12);
+                    cp |= (((unsigned char)str[i++] & 0x3F) << 6);
+                    cp |= ((unsigned char)str[i++] & 0x3F);
+                }
+            }
+
+            if (cp < 0x10000) {
+                result.push_back((char16_t)cp);
+            }
+            else {
+                cp -= 0x10000;
+                result.push_back((char16_t)((cp >> 10) | 0xD800));
+                result.push_back((char16_t)((cp & 0x3FF) | 0xDC00));
+            }
+        }
+        return result;
     }
 
     std::string ToUTF8(const std::u16string_view& str) {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
-        return utf16conv.to_bytes(str.data(), str.data() + str.size());
+        std::string result;
+        result.reserve(str.size() * 3);
+        for (size_t i = 0; i < str.size(); ++i) {
+            uint32_t cp = str[i];
+            if (cp >= 0xD800 && cp <= 0xDBFF && i + 1 < str.size()) {
+                uint32_t low = str[++i];
+                if (low >= 0xDC00 && low <= 0xDFFF) {
+                    cp = ((cp - 0xD800) << 10) + (low - 0xDC00) + 0x10000;
+                }
+            }
+
+            if (cp < 0x80) result.push_back((char)cp);
+            else if (cp < 0x800) {
+                result.push_back((char)((cp >> 6) | 0xC0));
+                result.push_back((char)((cp & 0x3F) | 0x80));
+            }
+            else if (cp < 0x10000) {
+                result.push_back((char)((cp >> 12) | 0xE0));
+                result.push_back((char)(((cp >> 6) & 0x3F) | 0x80));
+                result.push_back((char)((cp & 0x3F) | 0x80));
+            }
+            else {
+                result.push_back((char)((cp >> 18) | 0xF0));
+                result.push_back((char)(((cp >> 12) & 0x3F) | 0x80));
+                result.push_back((char)(((cp >> 6) & 0x3F) | 0x80));
+                result.push_back((char)((cp & 0x3F) | 0x80));
+            }
+        }
+        return result;
     }
 
     JNIEnv* GetJNIEnv() {
