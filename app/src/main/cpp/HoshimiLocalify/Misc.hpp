@@ -2,7 +2,6 @@
 
 #include <string>
 #include <string_view>
-#include <jni.h>
 #include <deque>
 #include <numeric>
 #include <vector>
@@ -14,7 +13,6 @@ namespace HoshimiLocal {
     namespace Misc {
         std::u16string ToUTF16(const std::string_view& str);
         std::string ToUTF8(const std::u16string_view& str);
-        JNIEnv* GetJNIEnv();
 
         class CSEnum {
         public:

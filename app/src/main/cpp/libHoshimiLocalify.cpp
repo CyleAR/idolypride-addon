@@ -15,6 +15,10 @@ JavaVM* g_javaVM = nullptr;
 jclass g_hoshimiHookMainClass = nullptr;
 jmethodID showToastMethodId = nullptr;
 
+bool UnityResolveProgress::startInit = false;
+UnityResolveProgress::Progress UnityResolveProgress::assembliesProgress{};
+UnityResolveProgress::Progress UnityResolveProgress::classProgress{};
+
 namespace
 {
     class AndroidHookInstaller : public HoshimiLocal::HookInstaller
@@ -50,7 +54,6 @@ extern "C"
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM* vm, void* reserved) {
     g_javaVM = vm;
-    HoshimiLocal::Log::Info("libHoshimiLocalify JNI_OnLoad called.");
     return JNI_VERSION_1_6;
 }
 
@@ -58,17 +61,14 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_io_github_cylear_hoshimi_localify_HoshimiHookMain_initHook(JNIEnv *env, jclass clazz, jstring targetLibraryPath,
                                                                  jstring localizationFilesDir) {
-    HoshimiLocal::Log::Info("libHoshimiLocalify initHook called.");
     g_hoshimiHookMainClass = clazz;
     showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
 
     const auto targetLibraryPathChars = env->GetStringUTFChars(targetLibraryPath, nullptr);
     const std::string targetLibraryPathStr = targetLibraryPathChars;
-    HoshimiLocal::Log::InfoFmt("targetLibraryPath: %s", targetLibraryPathStr.c_str());
 
     const auto localizationFilesDirChars = env->GetStringUTFChars(localizationFilesDir, nullptr);
     const std::string localizationFilesDirCharsStr = localizationFilesDirChars;
-    HoshimiLocal::Log::InfoFmt("localizationFilesDir: %s", localizationFilesDirCharsStr.c_str());
 
     auto& plugin = HoshimiLocal::Plugin::GetInstance();
     plugin.InstallHook(std::make_unique<AndroidHookInstaller>(targetLibraryPathStr, localizationFilesDirCharsStr));
@@ -122,4 +122,33 @@ JNIEXPORT void JNICALL
 Java_io_github_cylear_hoshimi_localify_HoshimiHookMain_pluginCallbackLooper(JNIEnv *env,
                                                                              jclass clazz) {
     HoshimiLocal::Log::ToastLoop(env, clazz);
+
+    if (UnityResolveProgress::startInit) {
+        return 9;
+    }
+    return 0;
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_github_cylear_hoshimi_localify_models_NativeInitProgress_pluginInitProgressLooper(
+        JNIEnv *env, jclass clazz, jobject progress) {
+
+    // jclass progressClass = env->GetObjectClass(progress);
+
+    static jfieldID startInitFieldID = env->GetStaticFieldID(clazz, "startInit", "Z");
+
+    static jmethodID setAssembliesProgressDataMethodID = env->GetMethodID(clazz, "setAssembliesProgressData", "(JJ)V");
+    static jmethodID setClassProgressDataMethodID = env->GetMethodID(clazz, "setClassProgressData", "(JJ)V");
+
+    // jboolean startInit = env->GetStaticBooleanField(clazz, startInitFieldID);
+
+    env->SetStaticBooleanField(clazz, startInitFieldID, UnityResolveProgress::startInit);
+
+    env->CallVoidMethod(progress, setAssembliesProgressDataMethodID,
+                        UnityResolveProgress::assembliesProgress.current, UnityResolveProgress::assembliesProgress.total);
+    env->CallVoidMethod(progress, setClassProgressDataMethodID,
+                        UnityResolveProgress::classProgress.current, UnityResolveProgress::classProgress.total);
+
 }

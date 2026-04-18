@@ -46,6 +46,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         HoshimiLocalify/camera/baseCamera.cpp
         HoshimiLocalify/camera/camera.cpp
         HoshimiLocalify/config/Config.cpp
+        HoshimiLocalify/string_parser/StringParser.cpp
         )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} xdl::xdl)
@@ -54,12 +55,17 @@ target_link_libraries(${CMAKE_PROJECT_NAME} shadowhook::shadowhook)
 include_directories(HoshimiLocalify)
 include_directories(${CMAKE_SOURCE_DIR}/deps)
 
+set(FMT_DIR "${CMAKE_SOURCE_DIR}/deps/fmt-11.0.2")
+include_directories(${FMT_DIR}/include)
+add_library(fmt STATIC ${FMT_DIR}/src/format.cc)
+
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
 target_link_libraries(${CMAKE_PROJECT_NAME}
     # List libraries link to the target library
     android
-    log)
+    log
+    fmt)
 
 target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_23)

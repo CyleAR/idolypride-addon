@@ -1,14 +1,10 @@
 #include "Log.h"
-#include <android/log.h>
-#include <Misc.hpp>
+#include "Misc.hpp"
 #include <sstream>
 #include <string>
 #include <thread>
 #include <queue>
-
-extern JavaVM* g_javaVM;
-extern jclass g_hoshimiHookMainClass;
-extern jmethodID showToastMethodId;
+#include <cstdarg>
 
 #define GetParamStringResult(name)\
     va_list args;\
@@ -75,6 +71,7 @@ namespace HoshimiLocal::Log {
         __android_log_write(prio, "IdolyprideLog", result.c_str());
     }
 
+    /*
     void ShowToastJNI(const char* text) {
         DebugFmt("Toast: %s", text);
 
@@ -84,7 +81,7 @@ namespace HoshimiLocal::Log {
                 return;
             }
 
-            jclass& kotlinClass = g_hoshimiHookMainClass;
+            jclass& kotlinClass = g_gakumasHookMainClass;
             if (!kotlinClass) {
                 g_javaVM->DetachCurrentThread();
                 return;
@@ -99,7 +96,7 @@ namespace HoshimiLocal::Log {
 
             g_javaVM->DetachCurrentThread();
         }).detach();
-    }
+    }*/
 
 
     void ShowToast(const std::string& text) {
@@ -107,7 +104,7 @@ namespace HoshimiLocal::Log {
     }
 
     void ShowToast(const char* text) {
-        DebugFmt("Toast: %s", text);
+        // DebugFmt("Toast: %s", text);
         return ShowToast(std::string(text));
     }
 
@@ -123,21 +120,5 @@ namespace HoshimiLocal::Log {
         const auto ret = showingToasts.front();
         showingToasts.pop();
         return ret;
-    }
-
-    void ToastLoop(JNIEnv *env, jclass clazz) {
-        const auto toastString = GetQueuedToast();
-        if (toastString.empty()) return;
-
-        static auto _showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
-
-        if (env && clazz && _showToastMethodId) {
-            jstring param = env->NewStringUTF(toastString.c_str());
-            env->CallStaticVoidMethod(clazz, _showToastMethodId, param);
-            env->DeleteLocalRef(param);
-        }
-        else {
-            _showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
-        }
     }
 }

@@ -5,19 +5,23 @@ namespace HoshimiLocal::Config {
 
     extern bool dbgMode;
     extern bool enabled;
+    extern bool lazyInit;
     extern bool replaceFont;
     extern bool forceExportResource;
     extern int gameOrientation;
     extern bool textTest;
+    extern bool useMasterTrans;
     extern bool dumpText;
     extern bool enableFreeCamera;
     extern int targetFrameRate;
     extern bool unlockAllLive;
-    extern bool loginAsIOS;
+    extern bool unlockAllLiveCostume;
 
     extern bool enableLiveCustomeDress;
     extern std::string liveCustomeHeadId;
     extern std::string liveCustomeCostumeId;
+
+    extern bool loginAsIOS;
 
     extern bool useCustomeGraphicSettings;
     extern float renderScale;
@@ -28,7 +32,7 @@ namespace HoshimiLocal::Config {
     extern int reflectionQualityLevel;
     extern int lodQualityLevel;
 
-    /* extern bool enableBreastParam;
+    extern bool enableBreastParam;
     extern float bDamping;
     extern float bStiffness;
     extern float bSpring;
@@ -45,7 +49,10 @@ namespace HoshimiLocal::Config {
     extern float bLimitYx;
     extern float bLimitYy;
     extern float bLimitZx;
-    extern float bLimitZy; */
+    extern float bLimitZy;
+
+    extern bool dmmUnlockSize;
 
     void LoadConfig(const std::string& configStr);
+    void SaveConfig(const std::string& configPath);
 }

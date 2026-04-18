@@ -2,15 +2,12 @@
 #include "../deps/UnityResolve/UnityResolve.hpp"
 #include "Log.h"
 #include <memory>
-#include <unordered_map>
-#include <vector>
-#include <string>
-#include <functional>
 
 namespace Il2cppUtils {
     using namespace HoshimiLocal;
 
     struct Il2CppClassHead {
+        // The following fields are always valid for a Il2CppClass structure
         const void* image;
         void* gc_desc;
         const char* name;
@@ -29,7 +26,7 @@ namespace Il2cppUtils {
 
     enum Il2CppTypeEnum
     {
-        IL2CPP_TYPE_END = 0x00,
+        IL2CPP_TYPE_END = 0x00,       /* End of List */
         IL2CPP_TYPE_VOID = 0x01,
         IL2CPP_TYPE_BOOLEAN = 0x02,
         IL2CPP_TYPE_CHAR = 0x03,
@@ -61,9 +58,11 @@ namespace Il2cppUtils {
         IL2CPP_TYPE_CMOD_REQD = 0x1f,
         IL2CPP_TYPE_CMOD_OPT = 0x20,
         IL2CPP_TYPE_INTERNAL = 0x21,
+
         IL2CPP_TYPE_MODIFIER = 0x40,
         IL2CPP_TYPE_SENTINEL = 0x41,
         IL2CPP_TYPE_PINNED = 0x45,
+
         IL2CPP_TYPE_ENUM = 0x55
     };
 
@@ -83,12 +82,28 @@ namespace Il2cppUtils {
         const Il2CppType* type;
     };
 
+    struct Resolution_t {
+        int width;
+        int height;
+        int herz;
+    };
+
+    struct FieldInfo {
+        const char* name;
+        const Il2CppType* type;
+        uintptr_t parent;
+        int32_t offset;
+        uint32_t token;
+    };
+
     struct MethodInfo {
         uintptr_t methodPointer;
         uintptr_t invoker_method;
         const char* name;
         uintptr_t klass;
         const Il2CppType* return_type;
+        //const ParameterInfo* parameters;
+        // const void* return_type;
         const void* parameters;
         uintptr_t methodDefinition;
         uintptr_t genericContainer;
@@ -101,20 +116,6 @@ namespace Il2cppUtils {
         uint8_t is_inflated : 1;
         uint8_t wrapper_type : 1;
         uint8_t is_marshaled_from_native : 1;
-    };
-
-    struct FieldInfo {
-        const char* name;
-        const Il2CppType* type;
-        uintptr_t parent;
-        int32_t offset;
-        uint32_t token;
-    };
-
-    struct Resolution_t {
-        int width;
-        int height;
-        int herz;
     };
 
     static UnityResolve::Class* GetClass(const std::string& assemblyName, const std::string& nameSpaceName,
@@ -131,6 +132,30 @@ namespace Il2cppUtils {
         }
         return pClass;
     }
+    /*
+    UnityResolve::Method* GetMethodIl2cpp(const char* assemblyName, const char* nameSpaceName,
+                                    const char* className, const char* methodName, const int argsCount) {
+        auto domain = UnityResolve::Invoke<void*>("il2cpp_domain_get");
+        UnityResolve::Invoke<void*>("il2cpp_thread_attach", domain);
+        auto image = UnityResolve::Invoke<void*>("il2cpp_assembly_get_image", domain);
+        if (!image) {
+            Log::ErrorFmt("GetMethodIl2cpp error: assembly %s not found.", assemblyName);
+            return nullptr;
+        }
+        Log::Debug("GetMethodIl2cpp 1");
+        auto klass = UnityResolve::Invoke<void*>("il2cpp_class_from_name", image, nameSpaceName, className);
+        if (!klass) {
+            Log::ErrorFmt("GetMethodIl2cpp error: Class %s::%s not found.", nameSpaceName, className);
+            return nullptr;
+        }
+        Log::Debug("GetMethodIl2cpp 2");
+        auto ret = UnityResolve::Invoke<UnityResolve::Method*>("il2cpp_class_get_method_from_name", klass, methodName, argsCount);
+        if (!ret) {
+            Log::ErrorFmt("GetMethodIl2cpp error: method %s::%s.%s not found.", nameSpaceName, className, methodName);
+            return nullptr;
+        }
+        return ret;
+    }*/
 
     static UnityResolve::Method* GetMethod(const std::string& assemblyName, const std::string& nameSpaceName,
                            const std::string& className, const std::string& methodName, const std::vector<std::string>& args = {}) {
@@ -146,6 +171,13 @@ namespace Il2cppUtils {
         }
         auto method = pClass->Get<UnityResolve::Method>(methodName, args);
         if (!method) {
+            /*
+            method = GetMethodIl2cpp(assemblyName.c_str(), nameSpaceName.c_str(), className.c_str(),
+                                     methodName.c_str(), args.size() == 0 ? -1 : args.size());
+            if (!method) {
+                Log::ErrorFmt("GetMethod error: method %s::%s.%s not found.", nameSpaceName.c_str(), className.c_str(), methodName.c_str());
+                return nullptr;
+            }*/
             Log::ErrorFmt("GetMethod error: method %s::%s.%s not found.", nameSpaceName.c_str(), className.c_str(), methodName.c_str());
             return nullptr;
         }
@@ -173,23 +205,31 @@ namespace Il2cppUtils {
         return UnityResolve::Invoke<MethodInfo*>("il2cpp_class_get_method_from_name", klass, name, argsCount);
     }
 
-    static void* find_nested_class(void* klass, std::function<bool(void*)> predicate)
-    {
+    static uintptr_t il2cpp_class_get_method_pointer_from_name(void* klass, const char* name, int argsCount) {
+        auto findKlass = il2cpp_class_get_method_from_name(klass, name, argsCount);
+        if (findKlass) {
+            return findKlass->methodPointer;
+        }
+        Log::ErrorFmt("method: %s not found", name);
+        return 0;
+    }
+
+    static void* find_nested_class(void* klass, std::predicate<void*> auto&& predicate) {
         void* iter{};
         while (const auto curNestedClass = UnityResolve::Invoke<void*>("il2cpp_class_get_nested_types", klass, &iter))
         {
-            if (predicate(curNestedClass))
+            if (static_cast<decltype(predicate)>(predicate)(curNestedClass))
             {
                 return curNestedClass;
             }
         }
+
         return nullptr;
     }
 
-    static void* find_nested_class_from_name(void* klass, const char* name)
-    {
-        return find_nested_class(klass, [name = std::string(name)](void* nestedClass) {
-            return std::string(static_cast<Il2CppClassHead*>(nestedClass)->name) == name;
+    static void* find_nested_class_from_name(void* klass, const char* name) {
+        return find_nested_class(klass, [name = std::string_view(name)](void* nestedClass) {
+            return static_cast<Il2CppClassHead*>(nestedClass)->name == name;
         });
     }
 
@@ -203,9 +243,10 @@ namespace Il2cppUtils {
         return *reinterpret_cast<RType*>(reinterpret_cast<uintptr_t>(obj) + field->offset);
     }
 
-    template <typename RType>
-    static auto ClassSetFieldValue(void* obj, UnityResolve::Field* field, RType value) -> void {
-        *reinterpret_cast<RType*>(reinterpret_cast<uintptr_t>(obj) + field->offset) = value;
+    template <typename T>
+    static auto ClassSetFieldValue(void* obj, UnityResolve::Field* field, T value) -> void {
+        const auto fieldPtr = static_cast<std::byte*>(obj) + field->offset;
+        std::memcpy(fieldPtr, std::addressof(value), sizeof(T));
     }
 
     template <typename RType>
@@ -214,17 +255,19 @@ namespace Il2cppUtils {
     }
 
     static void* get_system_class_from_reflection_type_str(const char* typeStr, const char* assemblyName = "mscorlib") {
-        using Il2cppString = UnityResolve::UnityType::String;
-        static auto assemblyLoad = reinterpret_cast<void* (*)(Il2cppString*)>(
+        using Il2CppString = UnityResolve::UnityType::String;
+
+        static auto assemblyLoad = reinterpret_cast<void* (*)(Il2CppString*)>(
                 GetMethodPointer("mscorlib.dll", "System.Reflection",
                                  "Assembly", "Load", {"*"})
         );
-        static auto assemblyGetType = reinterpret_cast<Il2CppReflectionType * (*)(void*, Il2cppString*)>(
+        static auto assemblyGetType = reinterpret_cast<Il2CppReflectionType * (*)(void*, Il2CppString*)>(
                 GetMethodPointer("mscorlib.dll", "System.Reflection",
                                  "Assembly", "GetType", {"*"})
         );
-        static auto reflectionAssembly = assemblyLoad(Il2cppString::New(assemblyName));
-        auto reflectionType = assemblyGetType(reflectionAssembly, Il2cppString::New(typeStr));
+
+        static auto reflectionAssembly = assemblyLoad(Il2CppString::New(assemblyName));
+        auto reflectionType = assemblyGetType(reflectionAssembly, Il2CppString::New(typeStr));
         return UnityResolve::Invoke<void*>("il2cpp_class_from_system_type", reflectionType);
     }
 
@@ -232,23 +275,32 @@ namespace Il2cppUtils {
     static std::unordered_map<int, std::string> EnumToValueMap(Il2CppClassHead* enumClass, bool useCache) {
         std::unordered_map<int, std::string> ret{};
         auto isEnum = UnityResolve::Invoke<bool>("il2cpp_class_is_enum", enumClass);
+
         if (isEnum) {
-            FieldInfo* field = nullptr;
+            Il2cppUtils::FieldInfo* field = nullptr;
             void* iter = nullptr;
+
             std::string cacheName = std::string(enumClass->namespaze) + "::" + enumClass->name;
             if (useCache) {
                 if (auto it = enumToValueMapCache.find(cacheName); it != enumToValueMapCache.end()) {
                     return it->second;
                 }
             }
-            while ((field = UnityResolve::Invoke<FieldInfo*>("il2cpp_class_get_fields", enumClass, &iter))) {
-                if (field->offset > 0) continue;
-                if (strcmp(field->name, "value__") == 0) continue;
+
+            while ((field = UnityResolve::Invoke<Il2cppUtils::FieldInfo*>("il2cpp_class_get_fields", enumClass, &iter))) {
+                // Log::DebugFmt("field: %s, off: %d", field->name, field->offset);
+                if (field->offset > 0) continue;  // 非 static
+                if (strcmp(field->name, "value__") == 0) {
+                    continue;
+                }
+
                 int value;
                 UnityResolve::Invoke<void>("il2cpp_field_static_get_value", field, &value);
+                // Log::DebugFmt("returnClass: %s - %s: 0x%x", enumClass->name, field->name, value);
                 std::string itemName = std::string(enumClass->name) + "_" + field->name;
                 ret.emplace(value, std::move(itemName));
             }
+
             if (useCache) {
                 enumToValueMapCache.emplace(std::move(cacheName), ret);
             }
@@ -256,37 +308,186 @@ namespace Il2cppUtils {
         return ret;
     }
 
+    template <typename T = void*>
+    static void iterate_IEnumerable(const void* obj, std::invocable<T> auto&& receiver)
+    {
+        const auto klass = get_class_from_instance(obj);
+        const auto getEnumeratorMethod = reinterpret_cast<void* (*)(const void*)>(il2cpp_class_get_method_from_name(klass, "GetEnumerator", 0)->methodPointer);
+        const auto enumerator = getEnumeratorMethod(obj);
+        const auto enumeratorClass = get_class_from_instance(enumerator);
+        const auto getCurrentMethod = reinterpret_cast<T(*)(void*)>(il2cpp_class_get_method_from_name(enumeratorClass, "get_Current", 0)->methodPointer);
+        const auto moveNextMethod = reinterpret_cast<bool(*)(void*)>(il2cpp_class_get_method_from_name(enumeratorClass, "MoveNext", 0)->methodPointer);
+
+        while (moveNextMethod(enumerator))
+        {
+            static_cast<decltype(receiver)>(receiver)(getCurrentMethod(enumerator));
+        }
+    }
+
     namespace Tools {
+
         template <typename T = void*>
         class CSListEditor {
         public:
             CSListEditor(void* list) {
                 list_klass = get_class_from_instance(list);
                 lst = list;
+
                 lst_get_Count_method = il2cpp_class_get_method_from_name(list_klass, "get_Count", 0);
                 lst_get_Item_method = il2cpp_class_get_method_from_name(list_klass, "get_Item", 1);
                 lst_set_Item_method = il2cpp_class_get_method_from_name(list_klass, "set_Item", 2);
                 lst_Add_method = il2cpp_class_get_method_from_name(list_klass, "Add", 1);
-                lst_get_Count = reinterpret_cast<int(*)(void*, void*)>(lst_get_Count_method->methodPointer);
-                lst_get_Item = reinterpret_cast<T(*)(void*, int, void*)>(lst_get_Item_method->methodPointer);
-                lst_set_Item = reinterpret_cast<void(*)(void*, int, T, void*)>(lst_set_Item_method->methodPointer);
-                lst_Add = reinterpret_cast<void(*)(void*, T, void*)>(lst_Add_method->methodPointer);
+                lst_Contains_method = il2cpp_class_get_method_from_name(list_klass, "Contains", 1);
+
+                lst_get_Count = reinterpret_cast<lst_get_Count_t>(lst_get_Count_method->methodPointer);
+                lst_get_Item = reinterpret_cast<lst_get_Item_t>(lst_get_Item_method->methodPointer);
+                lst_set_Item = reinterpret_cast<lst_set_Item_t>(lst_set_Item_method->methodPointer);
+                lst_Add = reinterpret_cast<lst_Add_t>(lst_Add_method->methodPointer);
+                lst_Contains = reinterpret_cast<lst_Contains_t>(lst_Contains_method->methodPointer);
             }
-            void Add(T value) { lst_Add(lst, value, lst_Add_method); }
-            T get_Item(int index) { return lst_get_Item(lst, index, lst_get_Item_method); }
-            void set_Item(int index, T value) { lst_set_Item(lst, index, value, lst_set_Item_method); }
-            int get_Count() { return lst_get_Count(lst, lst_get_Count_method); }
+
+            void Add(T value) {
+                lst_Add(lst, value, lst_Add_method);
+            }
+
+            bool Contains(T value) {
+                return lst_Contains(lst, value, lst_Contains_method);
+            }
+
+            T get_Item(int index) {
+                return lst_get_Item(lst, index, lst_get_Item_method);
+            }
+
+            void set_Item(int index, T value) {
+                return lst_set_Item(lst, index, value, lst_set_Item_method);
+            }
+
+            int get_Count() {
+                return lst_get_Count(lst, lst_get_Count_method);
+            }
+
+            T operator[] (int key) {
+                return get_Item(key);
+            }
+
+            class Iterator {
+            public:
+                Iterator(CSListEditor<T>* editor, int index) : editor(editor), index(index) {}
+
+                T operator*() const {
+                    return editor->get_Item(index);
+                }
+
+                Iterator& operator++() {
+                    ++index;
+                    return *this;
+                }
+
+                bool operator!=(const Iterator& other) const {
+                    return index != other.index;
+                }
+
+            private:
+                CSListEditor<T>* editor;
+                int index;
+            };
+
+            Iterator begin() {
+                return Iterator(this, 0);
+            }
+
+            Iterator end() {
+                return Iterator(this, get_Count());
+            }
+
             void* lst;
             void* list_klass;
         private:
+            typedef T(*lst_get_Item_t)(void*, int, void* mtd);
+            typedef void(*lst_Add_t)(void*, T, void* mtd);
+            typedef void(*lst_set_Item_t)(void*, int, T, void* mtd);
+            typedef int(*lst_get_Count_t)(void*, void* mtd);
+            typedef bool(*lst_Contains_t)(void*, T, void* mtd);
+
             MethodInfo* lst_get_Item_method;
             MethodInfo* lst_Add_method;
             MethodInfo* lst_get_Count_method;
             MethodInfo* lst_set_Item_method;
-            int(*lst_get_Count)(void*, void*);
-            T(*lst_get_Item)(void*, int, void*);
-            void(*lst_set_Item)(void*, int, T, void*);
-            void(*lst_Add)(void*, T, void*);
+            MethodInfo* lst_Contains_method;
+
+            lst_get_Item_t lst_get_Item;
+            lst_set_Item_t lst_set_Item;
+            lst_Add_t lst_Add;
+            lst_get_Count_t lst_get_Count;
+            lst_Contains_t lst_Contains;
         };
+
+
+        template <typename KT = void*, typename VT = void*>
+        class CSDictEditor {
+        public:
+            // @param dict: Dictionary instance.
+            // @param dictTypeStr: Reflection type. eg: "System.Collections.Generic.Dictionary`2[System.Int32, System.Int32]"
+            CSDictEditor(void* dict, const char* dictTypeStr) {
+                dic_klass = Il2cppUtils::get_system_class_from_reflection_type_str(dictTypeStr);
+				initDict(dict);
+            }
+
+            CSDictEditor(void* dict) {
+				dic_klass = get_class_from_instance(dict);
+				initDict(dict);
+            }
+
+            CSDictEditor(void* dict, void* dicClass) {
+                dic_klass = dicClass;
+				initDict(dict);
+            }
+
+            void Add(KT key, VT value) {
+                dic_Add(dict, key, value, Add_method);
+            }
+
+            bool ContainsKey(KT key) {
+                return dic_containsKey(dict, key, ContainsKey_method);
+            }
+
+            VT get_Item(KT key) {
+                return dic_get_Item(dict, key, get_Item_method);
+            }
+
+            VT operator[] (KT key) {
+                return get_Item(key);
+            }
+
+            void* dict;
+            void* dic_klass;
+
+        private:
+            void initDict(void* dict) {
+				// dic_klass = dicClass;
+                this->dict = dict;
+
+                get_Item_method = il2cpp_class_get_method_from_name(dic_klass, "get_Item", 1);
+                Add_method = il2cpp_class_get_method_from_name(dic_klass, "Add", 2);
+                ContainsKey_method = il2cpp_class_get_method_from_name(dic_klass, "ContainsKey", 1);
+
+                dic_get_Item = (dic_get_Item_t)get_Item_method->methodPointer;
+                dic_Add = (dic_Add_t)Add_method->methodPointer;
+                dic_containsKey = (dic_containsKey_t)ContainsKey_method->methodPointer;
+            }
+
+            typedef VT(*dic_get_Item_t)(void*, KT, void* mtd);
+            typedef VT(*dic_Add_t)(void*, KT, VT, void* mtd);
+            typedef VT(*dic_containsKey_t)(void*, KT, void* mtd);
+
+            CSDictEditor();
+            MethodInfo* get_Item_method;
+            MethodInfo* Add_method;
+            MethodInfo* ContainsKey_method;
+            dic_get_Item_t dic_get_Item;
+            dic_Add_t dic_Add;
+            dic_containsKey_t dic_containsKey;
+        };
+
     }
 }

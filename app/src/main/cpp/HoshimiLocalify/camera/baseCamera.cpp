@@ -1,17 +1,15 @@
 #include "baseCamera.hpp"
 #include <thread>
 
-
 namespace BaseCamera {
 	using Vector3_t = UnityResolve::UnityType::Vector3;
 
 	float moveStep = 0.05;
-	float look_radius = 5;  // 转向?�径
+	float look_radius = 5;  // 转向半径
 	float moveAngel = 1;  // 转向角度
 
 	int smoothLevel = 1;
 	unsigned long sleepTime = 0;
-	
 
 	Camera::Camera() {
 		Camera(0, 0, 0, 0, 0, 0);
@@ -62,12 +60,12 @@ namespace BaseCamera {
 		return lookAt;
 	}
 
-	void Camera::set_lon_move(float vertanglePlus, LonMoveHState moveState, float multiplier) {  // ?�后移动
+	void Camera::set_lon_move(float vertanglePlus, LonMoveHState moveState, float multiplier) {  // 前后移动
 		auto radian = (verticalAngle + vertanglePlus) * M_PI / 180;
 		auto radianH = (double)horizontalAngle * M_PI / 180;
 
-		auto f_step = cos(radian) * moveStep * cos(radianH) / smoothLevel * multiplier;  // ?�↓
-		auto l_step = sin(radian) * moveStep * cos(radianH) / smoothLevel * multiplier;  // ?�→
+		auto f_step = cos(radian) * moveStep * cos(radianH) / smoothLevel * multiplier;  // ↑↓
+		auto l_step = sin(radian) * moveStep * cos(radianH) / smoothLevel * multiplier;  // ←→
 		// auto h_step = tan(radianH) * sqrt(pow(f_step, 2) + pow(l_step, 2));
 		auto h_step = sin(radianH) * moveStep / smoothLevel * multiplier;
 
@@ -89,9 +87,9 @@ namespace BaseCamera {
 		}
 	}
 
-	void Camera::updateVertLook() {  // �?
-		auto radian = verticalAngle * M_PI / 180;
-		auto radian2 = ((double)horizontalAngle - 90) * M_PI / 180;  // ??
+	void Camera::updateVertLook() {  // 上+
+        auto radian = verticalAngle * M_PI / 180;
+		auto radian2 = ((double)horizontalAngle - 90) * M_PI / 180;  // 日
 
 		auto stepX1 = look_radius * sin(radian2) * cos(radian) / smoothLevel;
 		auto stepX2 = look_radius * sin(radian2) * sin(radian) / smoothLevel;
@@ -105,7 +103,7 @@ namespace BaseCamera {
 		}
 	}
 
-	void Camera::setHoriLook(float vertangle) {  // �?
+	void Camera::setHoriLook(float vertangle) {  // 左+
 		auto radian = vertangle * M_PI / 180;
 		auto radian2 = horizontalAngle * M_PI / 180;
 
@@ -120,6 +118,4 @@ namespace BaseCamera {
 			std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
 		}
 	}
-
-
 }

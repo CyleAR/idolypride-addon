@@ -11,31 +11,94 @@
 #include <thread>
 #include <regex>
 #include <ranges>
+#include <string>
+#include <cctype>
+#include <algorithm>
 #include "BaseDefine.h"
+#include "string_parser/StringParser.hpp"
+
+// #include "cpprest/details/http_helpers.h"
 
 
 namespace HoshimiLocal::Local {
     std::unordered_map<std::string, std::string> i18nData{};
     std::unordered_map<std::string, std::string> i18nDumpData{};
     std::unordered_map<std::string, std::string> genericText{};
+    std::unordered_map<std::string, std::string> genericSplitText{};
+    std::unordered_map<std::string, std::string> genericFmtText{};
     std::vector<std::string> genericTextDumpData{};
+    std::vector<std::string> genericSplittedDumpData{};
+    std::vector<std::string> genericOrigTextDumpData{};
+    std::vector<std::string> genericFmtTextDumpData{};
+
     std::unordered_set<std::string> translatedText{};
     int genericDumpFileIndex = 0;
+    const std::string splitTextPrefix = "[__split__]";
 
     std::filesystem::path GetBasePath() {
         return Plugin::GetInstance().GetHookInstaller()->localizationFilesDir;
     }
 
+    bool isAllSpace(const std::string& str) {
+        return std::all_of(str.begin(), str.end(), [](unsigned char c) {
+            return std::isspace(c);
+        });
+    }
+
+    std::string trim(const std::string& str) {
+        auto is_not_space = [](char ch) { return !std::isspace(ch); };
+        auto start = std::ranges::find_if(str, is_not_space);
+        auto end = std::ranges::find_if(str | std::views::reverse, is_not_space).base();
+
+        if (start < end) {
+            return {start, end};
+        }
+        return "";
+    }
+
+    std::string findInMapIgnoreSpace(const std::string& key, const std::unordered_map<std::string, std::string>& searchMap) {
+        auto is_space = [](char ch) { return std::isspace(ch); };
+        auto front = std::ranges::find_if_not(key, is_space);
+        auto back = std::ranges::find_if_not(key | std::views::reverse, is_space).base();
+
+        std::string prefix(key.begin(), front);
+        std::string suffix(back, key.end());
+
+        std::string trimmedKey = trim(key);
+        if ( auto it = searchMap.find(trimmedKey); it != searchMap.end()) {
+            return prefix + it->second + suffix;
+        }
+        else {
+            return "";
+        }
+    }
+
+    enum class DumpStrStat {
+        DEFAULT = 0,
+        SPLITTABLE_ORIG = 1,
+        SPLITTED = 2,
+        FMT = 3
+    };
+
+    enum class SplitTagsTranslationStat {
+        NO_TRANS,
+        PART_TRANS,
+        FULL_TRANS,
+        NO_SPLIT,
+        NO_SPLIT_AND_EMPTY
+    };
+
     void LoadJsonDataToMap(const std::filesystem::path& filePath, std::unordered_map<std::string, std::string>& dict,
-                           const bool insertToTranslated = false, const bool needClearDict = true) {
+                           const bool insertToTranslated = false, const bool needClearDict = true,
+                           const bool needCheckSplitPrefix = false) {
         if (!exists(filePath)) return;
         try {
             if (needClearDict) {
                 dict.clear();
             }
-            std::ifstream file(filePath, std::ios::binary);
+            std::ifstream file(filePath);
             if (!file.is_open()) {
-                Log::ErrorFmt("Load %s failed.\n", filePath.c_str());
+                Log::ErrorFmt("Load %s failed.\n", filePath.string().c_str());
                 return;
             }
             std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -44,12 +107,20 @@ namespace HoshimiLocal::Local {
             for (auto& i : fileData.items()) {
                 const auto& key = i.key();
                 const std::string value = i.value();
-                if (insertToTranslated) translatedText.emplace(value);
-                dict[key] = value;
+                if (needCheckSplitPrefix && key.starts_with(splitTextPrefix) && value.starts_with(splitTextPrefix)) {
+                    static const auto splitTextPrefixLength = splitTextPrefix.size();
+                    const auto splitValue = value.substr(splitTextPrefixLength);
+                    genericSplitText[key.substr(splitTextPrefixLength)] = splitValue;
+                    if (insertToTranslated) translatedText.emplace(splitValue);
+                }
+                else {
+                    dict[key] = value;
+                    if (insertToTranslated) translatedText.emplace(value);
+                }
             }
         }
         catch (std::exception& e) {
-            Log::ErrorFmt("Load %s failed: %s\n", filePath.c_str(), e.what());
+            Log::ErrorFmt("Load %s failed: %s\n", filePath.string().c_str(), e.what());
         }
     }
 
@@ -84,7 +155,7 @@ namespace HoshimiLocal::Local {
     }
 
     void DumpVectorDataToJson(const std::filesystem::path& dumpBasePath, const std::filesystem::path& fileName,
-                           const std::vector<std::string>& vec) {
+                           const std::vector<std::string>& vec, const std::string& prefix = "") {
         const auto dumpFilePath = dumpBasePath / fileName;
         try {
             if (!is_directory(dumpBasePath)) {
@@ -101,7 +172,12 @@ namespace HoshimiLocal::Local {
             dumpLrcFile.close();
             auto fileData = nlohmann::ordered_json::parse(fileContent);
             for (const auto& i : vec) {
-                fileData[i] = i;
+                if (!prefix.empty()) {
+                    fileData[prefix + i] = prefix + i;
+                }
+                else {
+                    fileData[i] = i;
+                }
             }
             const auto newStr = fileData.dump(4, 32, false);
             std::ofstream dumpWriteLrcFile(dumpFilePath, std::ofstream::out);
@@ -181,7 +257,7 @@ namespace HoshimiLocal::Local {
     }
 
     bool GetSplitTagsTranslation(const std::string& origText, std::string* newText, std::vector<std::string>& unTransResultRet) {
-        if (!origText.contains(L'<')) return false;
+        if (!origText.contains('<')) return false;
         const auto splitResult = SplitByTags(origText);
         if (splitResult.empty()) return false;
 
@@ -199,12 +275,106 @@ namespace HoshimiLocal::Local {
         return ret;
     }
 
+    void ReplaceNumberComma(std::string* orig) {
+        if (!orig->contains("，")) return;
+        std::string newStr = *orig;
+        ReplaceString(&newStr, "，", ",");
+        if (IsPureStringValue(newStr)) {
+            *orig = newStr;
+        }
+    }
+
+    SplitTagsTranslationStat GetSplitTagsTranslationFull(const std::string& origTextIn, std::string* newText, std::vector<std::string>& unTransResultRet) {
+        // static const std::u16string splitFlags = u"0123456789+＋-－%％【】.";
+        static const std::unordered_set<char16_t> splitFlags = {u'0', u'1', u'2', u'3', u'4', u'5',
+                                                                u'6', u'7', u'8', u'9', u'+', u'＋',
+                                                                u'-', u'－', u'%', u'％', u'【', u'】',
+                                                                u'.', u':', u'：', u'×'};
+
+        const auto origText = Misc::ToUTF16(origTextIn);
+        bool isInTag = false;
+        std::vector<std::string> waitingReplaceTexts{};
+
+        std::u16string currentWaitingReplaceText;
+
+#define checkCurrentWaitingReplaceTextAndClear() \
+    if (!currentWaitingReplaceText.empty()) { \
+        waitingReplaceTexts.push_back(Misc::ToUTF8(currentWaitingReplaceText)); \
+        currentWaitingReplaceText.clear(); }
+
+        for (char16_t currChar : origText) {
+            if (currChar == u'<') {
+                isInTag = true;
+            }
+            if (currChar == u'>') {
+                isInTag = false;
+                checkCurrentWaitingReplaceTextAndClear()
+                continue;
+            }
+            if (isInTag) {
+                checkCurrentWaitingReplaceTextAndClear()
+                continue;
+            }
+
+            if (!splitFlags.contains(currChar)) {
+                currentWaitingReplaceText.push_back(currChar);
+            }
+            else {
+                checkCurrentWaitingReplaceTextAndClear()
+            }
+        }
+        if (waitingReplaceTexts.empty()) {
+            if (currentWaitingReplaceText.empty()) {
+                return SplitTagsTranslationStat::NO_SPLIT_AND_EMPTY;
+            }
+            else {
+                if (!(!origText.empty() && splitFlags.contains(origText[0]))) {  // 开头为特殊符号或数字
+                    return SplitTagsTranslationStat::NO_SPLIT;
+                }
+            }
+        }
+        checkCurrentWaitingReplaceTextAndClear()
+
+        *newText = origTextIn;
+        SplitTagsTranslationStat ret;
+        bool hasTrans = false;
+        bool hasNotTrans = false;
+        if (!waitingReplaceTexts.empty()) {
+            for (const auto& i : waitingReplaceTexts) {
+                if (isAllSpace(i)) continue;
+                std::string searchResult = findInMapIgnoreSpace(i, genericSplitText);
+                if (!searchResult.empty()) {
+                    ReplaceNumberComma(&searchResult);
+                    ReplaceString(newText, i, searchResult);
+                    hasTrans = true;
+                }
+                else {
+                    unTransResultRet.emplace_back(trim(i));
+                    hasNotTrans = true;
+                }
+            }
+            if (hasTrans && hasNotTrans) {
+                ret = SplitTagsTranslationStat::PART_TRANS;
+            }
+            else if (hasTrans && !hasNotTrans) {
+                ret = SplitTagsTranslationStat::FULL_TRANS;
+            }
+            else {
+                ret = SplitTagsTranslationStat::NO_TRANS;
+            }
+        }
+        else {
+            ret = SplitTagsTranslationStat::NO_TRANS;
+        }
+        return ret;
+    }
+
     void LoadData() {
         static auto localizationFile = GetBasePath() / "local-files" / "localization.json";
         static auto genericFile = GetBasePath() / "local-files" / "generic.json";
+        static auto genericSplitFile = GetBasePath() / "local-files" / "generic.split.json";
         static auto genericDir = GetBasePath() / "local-files" / "genericTrans";
 
-        Log::InfoFmt("Loading localization from: %s", localizationFile.c_str());
         if (!std::filesystem::is_regular_file(localizationFile)) {
             Log::ErrorFmt("localizationFile: %s not found.", localizationFile.c_str());
             return;
@@ -212,14 +382,24 @@ namespace HoshimiLocal::Local {
         LoadJsonDataToMap(localizationFile, i18nData, true);
         Log::InfoFmt("%ld localization items loaded.", i18nData.size());
 
-        Log::InfoFmt("Loading generic from: %s", genericFile.c_str());
-        LoadJsonDataToMap(genericFile, genericText, true);
+        LoadJsonDataToMap(genericFile, genericText, true, true, true);
+        genericSplitText.clear();
+        genericFmtText.clear();
+        LoadJsonDataToMap(genericSplitFile, genericSplitText, true, true, true);
         if (std::filesystem::exists(genericDir) || std::filesystem::is_directory(genericDir)) {
             for (const auto& entry : std::filesystem::recursive_directory_iterator(genericDir)) {
                 if (std::filesystem::is_regular_file(entry.path())) {
-                    const auto currFile = entry.path();
+                    const auto& currFile = entry.path();
                     if (to_lower(currFile.extension().string()) == ".json") {
-                        LoadJsonDataToMap(currFile, genericText, true, false);
+                        if (currFile.filename().string().ends_with(".split.json")) {  // split text file
+                            LoadJsonDataToMap(currFile, genericSplitText, true, false, true);
+                        }
+                        if (currFile.filename().string().ends_with(".fmt.json")) {  // fmt text file
+                            LoadJsonDataToMap(currFile, genericFmtText, true, false, false);
+                        }
+                        else {
+                            LoadJsonDataToMap(currFile, genericText, true, false, true);
+                        }
                     }
                 }
             }
@@ -259,7 +439,7 @@ namespace HoshimiLocal::Local {
     }
 
     std::string readFileToString(const std::string& filename) {
-        std::ifstream file(filename, std::ios::binary);
+        std::ifstream file(filename);
         if (!file.is_open()) {
             throw std::exception();
         }
@@ -276,7 +456,7 @@ namespace HoshimiLocal::Local {
             const auto targetFilePath = basePath / "local-files" / "resource" / name;
             // Log::DebugFmt("GetResourceText: %s", targetFilePath.c_str());
             if (exists(targetFilePath)) {
-                auto readStr = readFileToString(targetFilePath);
+                auto readStr = readFileToString(targetFilePath.string());
                 *ret = readStr;
                 return true;
             }
@@ -287,58 +467,142 @@ namespace HoshimiLocal::Local {
         return false;
     }
 
-    std::string GetDumpGenericFileName() {
-        if (genericDumpFileIndex == 0) return "generic.json";
-        return Log::StringFormat("generic_%d.json", genericDumpFileIndex);
+    std::string GetDumpGenericFileName(DumpStrStat stat = DumpStrStat::DEFAULT) {
+        if (stat == DumpStrStat::SPLITTABLE_ORIG) {
+            if (genericDumpFileIndex == 0) return "generic_orig.json";
+            return Log::StringFormat("generic_orig_%d.json", genericDumpFileIndex);
+        }
+        else if (stat == DumpStrStat::FMT) {
+            if (genericDumpFileIndex == 0) return "generic.fmt.json";
+            return Log::StringFormat("generic_%d.fmt.json", genericDumpFileIndex);
+        }
+        else {
+            if (genericDumpFileIndex == 0) return "generic.json";
+            return Log::StringFormat("generic_%d.json", genericDumpFileIndex);
+        }
     }
 
     bool inDumpGeneric = false;
-    void DumpGenericText(const std::string& origText) {
+    void DumpGenericText(const std::string& origText, DumpStrStat stat = DumpStrStat::DEFAULT) {
         if (translatedText.contains(origText)) return;
 
-        if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), origText) != genericTextDumpData.end()) {
+        std::array<std::reference_wrapper<std::vector<std::string>>, 4> targets = {
+                genericTextDumpData,
+                genericOrigTextDumpData,
+                genericSplittedDumpData,
+                genericFmtTextDumpData
+        };
+
+        auto& appendTarget = targets[static_cast<int>(stat)].get();
+
+        if (std::find(appendTarget.begin(), appendTarget.end(), origText) != appendTarget.end()) {
             return;
         }
         if (IsPureStringValue(origText)) return;
 
-        genericTextDumpData.push_back(origText);
+        appendTarget.push_back(origText);
         static auto dumpBasePath = GetBasePath() / "dump-files";
 
         if (inDumpGeneric) return;
         inDumpGeneric = true;
         std::thread([](){
             std::this_thread::sleep_for(std::chrono::seconds(5));
-            DumpVectorDataToJson(dumpBasePath, GetDumpGenericFileName(), genericTextDumpData);
+            DumpVectorDataToJson(dumpBasePath, GetDumpGenericFileName(DumpStrStat::DEFAULT), genericTextDumpData);
+            DumpVectorDataToJson(dumpBasePath, GetDumpGenericFileName(DumpStrStat::SPLITTABLE_ORIG), genericOrigTextDumpData);
+            DumpVectorDataToJson(dumpBasePath, GetDumpGenericFileName(DumpStrStat::SPLITTED), genericSplittedDumpData, splitTextPrefix);
+            DumpVectorDataToJson(dumpBasePath, GetDumpGenericFileName(DumpStrStat::FMT), genericFmtTextDumpData);
             genericTextDumpData.clear();
+            genericSplittedDumpData.clear();
+            genericOrigTextDumpData.clear();
+            genericFmtTextDumpData.clear();
             inDumpGeneric = false;
         }).detach();
     }
 
     bool GetGenericText(const std::string& origText, std::string* newStr) {
+        // 完全匹配
         if (const auto iter = genericText.find(origText); iter != genericText.end()) {
             *newStr = iter->second;
             return true;
         }
-
-        std::vector<std::string> unTransResultRet;
-        if (GetSplitTagsTranslation(origText, newStr, unTransResultRet)) {
-            return true;
-        }
-
-        if (!Config::dumpText) {
+        // 不翻译翻译过的文本
+        if (translatedText.contains(origText)) {
             return false;
         }
 
-        if (unTransResultRet.empty()) {
+        // 匹配升级卡名
+        if (auto plusPos = origText.find_last_not_of('+'); plusPos != std::string::npos) {
+            const auto noPlusText = origText.substr(0, plusPos + 1);
+
+            if (const auto iter = genericText.find(noPlusText); iter != genericText.end()) {
+                size_t plusCount = origText.length() - (plusPos + 1);
+                *newStr = iter->second + std::string(plusCount, '+');
+                return true;
+            }
+        }
+
+        // fmt 文本
+        auto fmtText = StringParser::ParseItems::parse(origText, false);
+        if (fmtText.isValid) {
+            const auto fmtStr = fmtText.ToFmtString();
+            if (auto it = genericFmtText.find(fmtStr); it != genericFmtText.end()) {
+                auto newRet = fmtText.MergeText(it->second);
+                if (!newRet.empty()) {
+                    *newStr = newRet;
+                    return true;
+                }
+            }
+            if (Config::dumpText) {
+                DumpGenericText(fmtStr, DumpStrStat::FMT);
+            }
+        }
+
+        auto ret = false;
+
+        // 分割匹配
+        std::vector<std::string> unTransResultRet;
+        const auto splitTransStat = GetSplitTagsTranslationFull(origText, newStr, unTransResultRet);
+        switch (splitTransStat) {
+            case SplitTagsTranslationStat::FULL_TRANS: {
+                DumpGenericText(origText, DumpStrStat::SPLITTABLE_ORIG);
+                return true;
+            } break;
+
+            case SplitTagsTranslationStat::NO_SPLIT_AND_EMPTY: {
+                return false;
+            } break;
+
+            case SplitTagsTranslationStat::NO_SPLIT: {
+                ret = false;
+            } break;
+
+            case SplitTagsTranslationStat::NO_TRANS: {
+                ret = false;
+            } break;
+
+            case SplitTagsTranslationStat::PART_TRANS: {
+                ret = true;
+            } break;
+        }
+
+        if (!Config::dumpText) {
+            return ret;
+        }
+
+        if (unTransResultRet.empty() || (splitTransStat == SplitTagsTranslationStat::NO_SPLIT)) {
             DumpGenericText(origText);
         }
         else {
             for (const auto& i : unTransResultRet) {
-                DumpGenericText(i);
+                DumpGenericText(i, DumpStrStat::SPLITTED);
             }
+            // 若未翻译部分长度为1，且未翻译文本等于原文本，则不 dump 到原文本文件
+            //if (unTransResultRet.size() != 1 || unTransResultRet[0] != origText) {
+                DumpGenericText(origText, DumpStrStat::SPLITTABLE_ORIG);
+            //}
         }
 
-        return false;
+        return ret;
     }
 
     std::string ChangeDumpTextIndex(int changeValue) {

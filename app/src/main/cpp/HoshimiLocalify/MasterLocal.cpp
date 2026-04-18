@@ -116,7 +116,7 @@ namespace HoshimiLocal::MasterLocal {
 
             auto field = UnityResolve::Invoke<Il2cppUtils::FieldInfo*>(
                     "il2cpp_class_get_field_from_name",
-                    (void*)self_klass,
+                    self_klass,
                     (fieldName + '_').c_str()
             );
             if (!field) {
@@ -137,7 +137,7 @@ namespace HoshimiLocal::MasterLocal {
             }
             auto field = UnityResolve::Invoke<Il2cppUtils::FieldInfo*>(
                     "il2cpp_class_get_field_from_name",
-                    (void*)self_klass,
+                    self_klass,
                     (fieldName + '_').c_str()
             );
             if (!field) return;
@@ -263,13 +263,18 @@ namespace HoshimiLocal::MasterLocal {
         }
 
         bool BuildObjectItemLocalRule(nlohmann::json& transData, ItemRule& itemRule) {
+            // transData: data[]
             bool hasSuccess = false;
             for (auto& data : transData) {
+                // data: {"id": "xxx", "produceDescriptions": [{"k", "v"}], "descriptions": {"k2", "v2"}}
                 if (!data.is_object()) continue;
                 for (auto& [key, value] : data.items()) {
+                    // key: "id", value: "xxx"
+                    // key: "produceDescriptions", value: [{"k", "v"}]
                     const auto valueType = checkJsonValueType(value);
                     switch (valueType) {
                         case JsonValueType::JVT_String:
+                            // case JsonValueType::JVT_Int:
                         case JsonValueType::JVT_ArrayString: {
                             if (std::find(itemRule.mainPrimaryKey.begin(), itemRule.mainPrimaryKey.end(), key) != itemRule.mainPrimaryKey.end()) {
                                 continue;
@@ -282,6 +287,7 @@ namespace HoshimiLocal::MasterLocal {
 
                         case JsonValueType::JVT_Object: {
                             ItemRule currRule{ .mainPrimaryKey = itemRule.subPrimaryKey[key] };
+
                             auto vJson = nlohmann::json::array();
                             vJson.push_back(value);
 
@@ -293,6 +299,7 @@ namespace HoshimiLocal::MasterLocal {
 
                         case JsonValueType::JVT_ArrayObject: {
                             for (auto& obj : value) {
+                                // obj: {"k", "v"}
                                 ItemRule currRule{ .mainPrimaryKey = itemRule.subPrimaryKey[key] };
                                 if (BuildObjectItemLocalRule(value, currRule)) {
                                     itemRule.subLocalKey.emplace(key, currRule.mainLocalKey);
@@ -318,6 +325,7 @@ namespace HoshimiLocal::MasterLocal {
             if (!primaryKeys.is_array()) return false;
             if (!transData.is_array()) return false;
 
+            // 首先构造 mainPrimaryKey 规则
             for (auto& pkItem : primaryKeys) {
                 if (!pkItem.is_string()) {
                     return false;
@@ -337,6 +345,7 @@ namespace HoshimiLocal::MasterLocal {
                     }
                 }
                 else {
+                    Log::ErrorFmt("Unsupported depth: %d", dotCount);
                     continue;
                 }
             }
@@ -362,17 +371,34 @@ namespace HoshimiLocal::MasterLocal {
                 return mainBaseUniqueKey;
             }
             catch (std::exception& e) {
+                Log::ErrorFmt("LoadData - BuildBaseMainUniqueKey failed: %s", e.what());
                 throw e;
             }
         }
 
+        void BuildBaseObjectSubUniqueKey(nlohmann::json& value, JsonValueType valueType, std::string& currLocalKey) {
+            switch (valueType) {
+                case JsonValueType::JVT_String:
+                    currLocalKey.append(value.get<std::string>());  // p_card-00-acc-0_002|0|produceDescriptions|ProduceDescriptionType_Exam|
+                    currLocalKey.push_back('|');
+                    break;
+                case JsonValueType::JVT_Int:
+                    currLocalKey.append(std::to_string(value.get<int>()));
+                    currLocalKey.push_back('|');
+                    break;
+                default:
+                    break;
+            }
+        }
+
         bool BuildUniqueKeyValue(nlohmann::json& data, TableLocalData& tableLocalData) {
-            const std::string mainBaseUniqueKey = BuildBaseMainUniqueKey(data, tableLocalData);
+            // 首先处理 main 部分
+            const std::string mainBaseUniqueKey = BuildBaseMainUniqueKey(data, tableLocalData);  // p_card-00-acc-0_002|0|
             if (mainBaseUniqueKey.empty()) return false;
             for (auto& mainLocalKey : tableLocalData.itemRule.mainLocalKey) {
                 if (!data.contains(mainLocalKey)) continue;
                 auto& currLocalValue = data[mainLocalKey];
-                auto currUniqueKey = mainBaseUniqueKey + mainLocalKey;
+                auto currUniqueKey = mainBaseUniqueKey + mainLocalKey;  // p_card-00-acc-0_002|0|name
                 if (tableLocalData.GetMainKeyType(mainLocalKey) == JsonValueType::JVT_ArrayString) {
                     tableLocalData.transStrListData.emplace(currUniqueKey, ArrayStrJsonToVec(currLocalValue));
                 }
@@ -380,19 +406,50 @@ namespace HoshimiLocal::MasterLocal {
                     tableLocalData.transData.emplace(currUniqueKey, currLocalValue);
                 }
             }
+            // 然后处理 sub 部分
+            /*
+            for (const auto& [subPrimaryParentKey, subPrimarySubKeys] : tableLocalData.itemRule.subPrimaryKey) {
+                if (!data.contains(subPrimaryParentKey)) continue;
+
+                const std::string subBaseUniqueKey = mainBaseUniqueKey + subPrimaryParentKey + '|';  // p_card-00-acc-0_002|0|produceDescriptions|
+
+                auto subValueType = checkJsonValueType(data[subPrimaryParentKey]);
+                std::string currLocalKey = subBaseUniqueKey;  // p_card-00-acc-0_002|0|produceDescriptions|
+                switch (subValueType) {
+                    case JsonValueType::JVT_Object: {
+                        for (auto& subPrimarySubKey : subPrimarySubKeys) {
+                            if (!data[subPrimaryParentKey].contains(subPrimarySubKey)) continue;
+                            auto& value = data[subPrimaryParentKey][subPrimarySubKey];
+                            auto valueType = tableLocalData.GetSubKeyType(subPrimaryParentKey, subPrimarySubKey);
+                            BuildBaseObjectSubUniqueKey(value, valueType, currLocalKey);  // p_card-00-acc-0_002|0|produceDescriptions|ProduceDescriptionType_Exam|
+                        }
+                    } break;
+                    case JsonValueType::JVT_ArrayObject: {
+                        int currIndex = 0;
+                        for (auto& obj : data[subPrimaryParentKey]) {
+                            for (auto& subPrimarySubKey : subPrimarySubKeys) {
+
+                            }
+                            currIndex++;
+                        }
+                    } break;
+                    default:
+                        break;
+                }
+            }*/
 
             for (const auto& [subLocalParentKey, subLocalSubKeys] : tableLocalData.itemRule.subLocalKey) {
                 if (!data.contains(subLocalParentKey)) continue;
 
-                const std::string subBaseUniqueKey = mainBaseUniqueKey + subLocalParentKey + '|';
+                const std::string subBaseUniqueKey = mainBaseUniqueKey + subLocalParentKey + '|';  // p_card-00-acc-0_002|0|produceDescriptions|
                 auto subValueType = checkJsonValueType(data[subLocalParentKey]);
                 if (subValueType != JsonValueType::JVT_NeedMore_EmptyArray) {
-                    tableLocalData.mainKeyType.emplace(subLocalParentKey, subValueType);
+                    tableLocalData.mainKeyType.emplace(subLocalParentKey, subValueType);  // 在这里插入 subParent 的类型
                 }
                 switch (subValueType) {
                     case JsonValueType::JVT_Object: {
                         for (auto& localSubKey : subLocalSubKeys) {
-                            const std::string currLocalUniqueKey = subBaseUniqueKey + localSubKey;
+                            const std::string currLocalUniqueKey = subBaseUniqueKey + localSubKey;  // p_card-00-acc-0_002|0|produceDescriptions|text
                             if (tableLocalData.GetSubKeyType(subLocalParentKey, localSubKey) == JsonValueType::JVT_ArrayString) {
                                 tableLocalData.transStrListData.emplace(currLocalUniqueKey, ArrayStrJsonToVec(data[subLocalParentKey][localSubKey]));
                             }
@@ -405,13 +462,14 @@ namespace HoshimiLocal::MasterLocal {
                         int currIndex = 0;
                         for (auto& obj : data[subLocalParentKey]) {
                             for (auto& localSubKey : subLocalSubKeys) {
-                                std::string currLocalUniqueKey = subBaseUniqueKey;
+                                std::string currLocalUniqueKey = subBaseUniqueKey;  // p_card-00-acc-0_002|0|produceDescriptions|
                                 currLocalUniqueKey.push_back('[');
                                 currLocalUniqueKey.append(std::to_string(currIndex));
                                 currLocalUniqueKey.append("]|");
-                                currLocalUniqueKey.append(localSubKey);
+                                currLocalUniqueKey.append(localSubKey);  // p_card-00-acc-0_002|0|produceDescriptions|[0]|text
 
                                 if (tableLocalData.GetSubKeyType(subLocalParentKey, localSubKey) == JsonValueType::JVT_ArrayString) {
+                                    // if (obj[localSubKey].is_array()) {
                                     tableLocalData.transStrListData.emplace(currLocalUniqueKey, ArrayStrJsonToVec(obj[localSubKey]));
                                 }
                                 else if (obj[localSubKey].is_string()) {
@@ -428,37 +486,41 @@ namespace HoshimiLocal::MasterLocal {
             return true;
         }
 
-#define MainKeyTypeProcess() if (!data.contains(mainPrimaryKey)) { isFailed = true; break; } \
+#define MainKeyTypeProcess() if (!data.contains(mainPrimaryKey)) { Log::ErrorFmt("mainPrimaryKey: %s not found", mainPrimaryKey.c_str()); isFailed = true; break; } \
     auto currType = checkJsonValueType(data[mainPrimaryKey]); \
     if (currType == JsonValueType::JVT_NeedMore_EmptyArray) goto NextLoop; \
     tableLocalData.mainKeyType[mainPrimaryKey] = currType
-#define SubKeyTypeProcess() if (!data.contains(subKeyParent)) { isFailed = true; break; } \
+#define SubKeyTypeProcess() if (!data.contains(subKeyParent)) { Log::ErrorFmt("subKeyParent: %s not found", subKeyParent.c_str()); isFailed = true; break; } \
                 for (auto& subKey : subKeys) { \
                     auto& subKeyValue = data[subKeyParent]; \
                     if (subKeyValue.is_object()) { \
-                        if (!subKeyValue.contains(subKey)) { isFailed = true; break; } \
-                        auto currType = checkJsonValueType(subKeyValue[subKey]); \
+                        if (!subKeyValue.contains(subKey)) { \
+                            Log::ErrorFmt("subKey: %s not in subKeyParent: %s", subKey.c_str(), subKeyParent.c_str()); isFailed = true; break; \
+                        }                                                                                                                                    \
+                        auto currType = checkJsonValueType(subKeyValue[subKey]);                                                                             \
                         if (currType == JsonValueType::JVT_NeedMore_EmptyArray) goto NextLoop; \
                         tableLocalData.subKeyType[subKeyParent].emplace(subKey, currType); \
                     } \
-                    else if (subKeyValue.is_array()) { \
-                        if (subKeyValue.empty()) goto NextLoop; \
+                    else if (subKeyValue.is_array()) {                                                                                                       \
+                        if (subKeyValue.empty()) goto NextLoop;                                                                                              \
                         for (auto& i : subKeyValue) { \
                             if (!i.is_object()) continue; \
-                            if (!i.contains(subKey)) continue; \
+                            if (!i.contains(subKey)) continue;  \
                             auto currType = checkJsonValueType(i[subKey]); \
                             if (currType == JsonValueType::JVT_NeedMore_EmptyArray) goto NextLoop; \
                             tableLocalData.subKeyType[subKeyParent].emplace(subKey, currType); \
                             break; \
                         } \
-                    } \
-                    else { \
+                    }                                                                                                                                        \
+                    else {                                                                                                                                   \
                         goto NextLoop;\
                     } \
                 }
 
         bool GetTableLocalData(nlohmann::json& fullData, TableLocalData& tableLocalData) {
             bool isFailed = false;
+
+            // 首先 Build mainKeyType 和 subKeyType
             for (auto& data : fullData["data"]) {
                 if (!data.is_object()) continue;
 
@@ -471,6 +533,7 @@ namespace HoshimiLocal::MasterLocal {
 
                 for (const auto& [subKeyParent, subKeys] : tableLocalData.itemRule.subPrimaryKey) {
                     SubKeyTypeProcess()
+
                     if (isFailed) break;
                 }
                 for (const auto& [subKeyParent, subKeys] : tableLocalData.itemRule.subLocalKey) {
@@ -485,11 +548,15 @@ namespace HoshimiLocal::MasterLocal {
             if (isFailed) return false;
 
             bool hasSuccess = false;
+            // 然后构造 transData
             for (auto& data : fullData["data"]) {
                 if (!data.is_object()) continue;
                 if (BuildUniqueKeyValue(data, tableLocalData)) {
                     hasSuccess = true;
                 }
+            }
+            if (!hasSuccess) {
+                Log::ErrorFmt("BuildUniqueKeyValue failed.");
             }
             return hasSuccess;
         }
@@ -498,10 +565,22 @@ namespace HoshimiLocal::MasterLocal {
             masterLocalData.clear();
             static auto masterDir = Local::GetBasePath() / "local-files" / "masterTrans";
             if (!std::filesystem::is_directory(masterDir)) {
+                Log::ErrorFmt("LoadData: not found: %s", masterDir.string().c_str());
                 return;
             }
 
+            bool isFirstIteration = true;
             for (auto& p : std::filesystem::directory_iterator(masterDir)) {
+                if (isFirstIteration) {
+                    auto totalFileCount = std::distance(
+                            std::filesystem::directory_iterator(masterDir),
+                            std::filesystem::directory_iterator{}
+                    );
+                    UnityResolveProgress::classProgress.total = totalFileCount <= 0 ? 1 : totalFileCount;
+                    isFirstIteration = false;
+                }
+                UnityResolveProgress::classProgress.current++;
+
                 if (!p.is_regular_file()) continue;
                 const auto& path = p.path();
                 if (path.extension() != ".json") continue;
@@ -517,22 +596,64 @@ namespace HoshimiLocal::MasterLocal {
                     }
                     ItemRule currRule;
                     if (!GetItemRule(j, currRule)) {
+                        Log::ErrorFmt("GetItemRule failed: %s", path.string().c_str());
                         continue;
                     }
+
+                    /*
+                    if (tableName == "ProduceStepEventDetail") {
+                        for (auto& i : currRule.mainLocalKey) {
+                            Log::DebugFmt("currRule.mainLocalKey: %s", i.c_str());
+                        }
+                        for (auto& i : currRule.mainPrimaryKey) {
+                            Log::DebugFmt("currRule.mainPrimaryKey: %s", i.c_str());
+                        }
+                        for (auto& i : currRule.subLocalKey) {
+                            for (auto& m : i.second) {
+                                Log::DebugFmt("currRule.subLocalKey: %s - %s", i.first.c_str(), m.c_str());
+                            }
+                        }
+                        for (auto& i : currRule.subPrimaryKey) {
+                            for (auto& m : i.second) {
+                                Log::DebugFmt("currRule.subPrimaryKey: %s - %s", i.first.c_str(), m.c_str());
+                            }
+                        }
+                    }*/
 
                     TableLocalData tableLocalData{ .itemRule = currRule };
                     if (GetTableLocalData(j, tableLocalData)) {
                         for (auto& i : tableLocalData.transData) {
+                            // Log::DebugFmt("%s: %s -> %s", tableName.c_str(), i.first.c_str(), i.second.c_str());
                             Local::translatedText.emplace(i.second);
                         }
                         for (auto& i : tableLocalData.transStrListData) {
                             for (auto& str : i.second) {
+                                // Log::DebugFmt("%s[]: %s -> %s", tableName.c_str(), i.first.c_str(), str.c_str());
                                 Local::translatedText.emplace(str);
                             }
                         }
+
+                        /*
+                        if (tableName == "ProduceStepEventDetail") {
+                            for (auto& i : tableLocalData.mainKeyType) {
+                                Log::DebugFmt("mainKeyType: %s -> %d", i.first.c_str(), i.second);
+                            }
+                            for (auto& i : tableLocalData.subKeyType) {
+                                for (auto& m : i.second) {
+                                    Log::DebugFmt("subKeyType: %s - %s -> %d", i.first.c_str(), m.first.c_str(), m.second);
+                                }
+                            }
+                        }*/
+                        // JVT_ArrayString in HelpCategory, ProduceStory, Tutorial
+
                         masterLocalData.emplace(tableName, std::move(tableLocalData));
                     }
+                    else {
+                        Log::ErrorFmt("GetTableLocalData failed: %s", path.string().c_str());
+                    }
                 } catch (std::exception& e) {
+                    Log::ErrorFmt("MasterLocal::LoadData: parse error in '%s': %s",
+                                  path.string().c_str(), e.what());
                 }
             }
         }
@@ -561,7 +682,8 @@ namespace HoshimiLocal::MasterLocal {
         if (it == masterLocalData.end()) return;
         const auto& localData = it->second;
 
-        std::string baseDataKey;
+        // 首先拼 BasePrimaryKey
+        std::string baseDataKey;  // p_card-00-acc-0_002|0|
         for (auto& mainPk : localData.itemRule.mainPrimaryKey) {
             auto mainPkType = localData.GetMainKeyType(mainPk);
             switch (mainPkType) {
@@ -581,9 +703,10 @@ namespace HoshimiLocal::MasterLocal {
             }
         }
 
+        // 然后本地化 mainLocal
         for (auto& mainLocal : localData.itemRule.mainLocalKey) {
             std::string currSearchKey = baseDataKey;
-            currSearchKey.append(mainLocal);
+            currSearchKey.append(mainLocal);  // p_card-00-acc-0_002|0|name
             auto localVType = localData.GetMainKeyType(mainLocal);
             switch (localVType) {
                 case JsonValueType::JVT_String: {
@@ -603,14 +726,16 @@ namespace HoshimiLocal::MasterLocal {
             }
         }
 
+        // 处理 sub
         for (const auto& [subParentKey, subLocalKeys] : localData.itemRule.subLocalKey) {
-            const auto subBaseSearchKey = baseDataKey + subParentKey + '|';
+            const auto subBaseSearchKey = baseDataKey + subParentKey + '|';  // p_card-00-acc-0_002|0|produceDescriptions|
+
             const auto subParentType = localData.GetMainKeyType(subParentKey);
             switch (subParentType) {
                 case JsonValueType::JVT_Object: {
                     auto subParentField = fc.CreateSubFieldController(subParentKey);
                     for (const auto& subLocalKey : subLocalKeys) {
-                        const auto currSearchKey = subBaseSearchKey + subLocalKey;
+                        const auto currSearchKey = subBaseSearchKey + subLocalKey;  // p_card-00-acc-0_002|0|produceDescriptions|text
                         auto localKeyType = localData.GetSubKeyType(subParentKey, subLocalKey);
                         if (localKeyType == JsonValueType::JVT_String) {
                             auto setData = GetTransString(currSearchKey, localData);
@@ -636,14 +761,21 @@ namespace HoshimiLocal::MasterLocal {
                         if (!currItem) continue;
                         auto currFc = FieldController::CreateSubFieldController(currItem);
 
-                        std::string currSearchBaseKey = subBaseSearchKey;
+                        std::string currSearchBaseKey = subBaseSearchKey;  // p_card-00-acc-0_002|0|produceDescriptions|
                         currSearchBaseKey.push_back('[');
                         currSearchBaseKey.append(std::to_string(idx));
-                        currSearchBaseKey.append("]|");
+                        currSearchBaseKey.append("]|");  // p_card-00-acc-0_002|0|produceDescriptions|[0]|
 
                         for (const auto& subLocalKey : subLocalKeys) {
-                            std::string currSearchKey = currSearchBaseKey + subLocalKey;
+                            std::string currSearchKey = currSearchBaseKey + subLocalKey;  // p_card-00-acc-0_002|0|produceDescriptions|[0]|text
+
                             auto localKeyType = localData.GetSubKeyType(subParentKey, subLocalKey);
+
+                            /*
+                            if (tableName == "ProduceStepEventDetail") {
+                                Log::DebugFmt("localKeyType: %d currSearchKey: %s", localKeyType, currSearchKey.c_str());
+                            }*/
+
                             if (localKeyType == JsonValueType::JVT_String) {
                                 auto setData = GetTransString(currSearchKey, localData);
                                 if (!setData.empty()) {
@@ -658,20 +790,20 @@ namespace HoshimiLocal::MasterLocal {
                             }
                         }
                     }
+
                 } break;
                 default:
                     break;
             }
         }
+
     }
 
     void LocalizeMasterItem(void* item, const std::string& tableName) {
-        if (!Config::textTest) return; // For testing
+        if (!Config::useMasterTrans) return;
+        // Log::DebugFmt("LocalizeMasterItem: %s", tableName.c_str());
         FieldController fc(item);
         LocalizeMasterItem(fc, tableName);
     }
 
-    // Since translatedText is not exported from Local.h, I'll remove the usage for now
-    // or we can add it to Local.h.
-
-}
+} // namespace HoshimiLocal::MasterLocal

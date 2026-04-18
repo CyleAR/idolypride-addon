@@ -2,79 +2,23 @@
 
 #include <codecvt>
 #include <locale>
-#include <jni.h>
+#include "fmt/core.h"
 
+#include <jni.h>
 
 extern JavaVM* g_javaVM;
 
 
 namespace HoshimiLocal::Misc {
-    std::u16string ToUTF16(const std::string_view& str) {
-        std::u16string result;
-        result.reserve(str.size());
-        for (size_t i = 0; i < str.size(); ) {
-            uint32_t cp = 0;
-            unsigned char c = (unsigned char)str[i++];
-            if (c < 0x80) cp = c;
-            else if (c < 0xE0) {
-                if (i < str.size()) cp = ((c & 0x1F) << 6) | ((unsigned char)str[i++] & 0x3F);
-            }
-            else if (c < 0xF0) {
-                if (i + 1 < str.size()) {
-                    cp = ((c & 0x0F) << 12) | (((unsigned char)str[i++] & 0x3F) << 6);
-                    cp |= ((unsigned char)str[i++] & 0x3F);
-                }
-            }
-            else {
-                if (i + 2 < str.size()) {
-                    cp = ((c & 0x07) << 18) | (((unsigned char)str[i++] & 0x3F) << 12);
-                    cp |= (((unsigned char)str[i++] & 0x3F) << 6);
-                    cp |= ((unsigned char)str[i++] & 0x3F);
-                }
-            }
 
-            if (cp < 0x10000) {
-                result.push_back((char16_t)cp);
-            }
-            else {
-                cp -= 0x10000;
-                result.push_back((char16_t)((cp >> 10) | 0xD800));
-                result.push_back((char16_t)((cp & 0x3FF) | 0xDC00));
-            }
-        }
-        return result;
+    std::u16string ToUTF16(const std::string_view& str) {
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
+        return utf16conv.from_bytes(str.data(), str.data() + str.size());
     }
 
     std::string ToUTF8(const std::u16string_view& str) {
-        std::string result;
-        result.reserve(str.size() * 3);
-        for (size_t i = 0; i < str.size(); ++i) {
-            uint32_t cp = str[i];
-            if (cp >= 0xD800 && cp <= 0xDBFF && i + 1 < str.size()) {
-                uint32_t low = str[++i];
-                if (low >= 0xDC00 && low <= 0xDFFF) {
-                    cp = ((cp - 0xD800) << 10) + (low - 0xDC00) + 0x10000;
-                }
-            }
-
-            if (cp < 0x80) result.push_back((char)cp);
-            else if (cp < 0x800) {
-                result.push_back((char)((cp >> 6) | 0xC0));
-                result.push_back((char)((cp & 0x3F) | 0x80));
-            }
-            else if (cp < 0x10000) {
-                result.push_back((char)((cp >> 12) | 0xE0));
-                result.push_back((char)(((cp >> 6) & 0x3F) | 0x80));
-                result.push_back((char)((cp & 0x3F) | 0x80));
-            }
-            else {
-                result.push_back((char)((cp >> 18) | 0xF0));
-                result.push_back((char)(((cp >> 12) & 0x3F) | 0x80));
-                result.push_back((char)(((cp >> 6) & 0x3F) | 0x80));
-                result.push_back((char)((cp & 0x3F) | 0x80));
-            }
-        }
-        return result;
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
+        return utf16conv.to_bytes(str.data(), str.data() + str.size());
     }
 
     JNIEnv* GetJNIEnv() {
@@ -146,20 +90,111 @@ namespace HoshimiLocal::Misc {
 
     int CSEnum::GetValueByName(const std::string &name) {
         for (int i = 0; i < names.size(); i++) {
-            if (names[i].compare(name) == 0) {
+            if (names[i] == name) {
                 return values[i];
             }
         }
         return values[0];
     }
 
+
     namespace StringFormat {
+        template<typename... Args>
+        std::string string_format(const std::string& fmt, Args&&... args) {
+            // return std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...));
+            return fmt::format(fmt::runtime(fmt), std::forward<Args>(args)...);
+        }
+
+
+        template <std::size_t N, std::size_t... Indices, typename T>
+        auto vectorToTupleImpl(const std::vector<T>& vec, std::index_sequence<Indices...>) {
+            if (vec.size() != N) {
+                // printf("vec.size: %zu, N: %zu\n", vec.size(), N);
+                throw std::out_of_range("Vector size does not match tuple size.");
+            }
+            return std::make_tuple(vec[Indices]...);
+        }
+
+        template <std::size_t N, typename T>
+        auto vectorToTuple(const std::vector<T>& vec) {
+            return vectorToTupleImpl<N>(vec, std::make_index_sequence<N>{});
+        }
+
+
+        template <typename T>
+        std::string stringFormat(const std::string& fmt, const std::vector<T>& vec) {
+            std::string ret = fmt;
+
+#define CASE_ARG_COUNT(N) \
+    case N: {\
+        auto tp = vectorToTuple<N>(vec); \
+        std::apply([&](auto&&... args) { \
+            ret = string_format(fmt, args...); \
+        }, tp); } break;
+
+            switch (vec.size()) {
+                CASE_ARG_COUNT(1)
+                CASE_ARG_COUNT(2)
+                CASE_ARG_COUNT(3)
+                CASE_ARG_COUNT(4)
+                CASE_ARG_COUNT(5)
+                CASE_ARG_COUNT(6)
+                CASE_ARG_COUNT(7)
+                CASE_ARG_COUNT(8)
+                CASE_ARG_COUNT(9)
+                CASE_ARG_COUNT(10)
+                CASE_ARG_COUNT(11)
+                CASE_ARG_COUNT(12)
+                CASE_ARG_COUNT(13)
+                CASE_ARG_COUNT(14)
+                CASE_ARG_COUNT(15)
+                CASE_ARG_COUNT(16)
+                CASE_ARG_COUNT(17)
+                CASE_ARG_COUNT(18)
+                CASE_ARG_COUNT(19)
+                CASE_ARG_COUNT(20)
+                CASE_ARG_COUNT(21)
+                CASE_ARG_COUNT(22)
+                CASE_ARG_COUNT(23)
+                CASE_ARG_COUNT(24)
+            }
+            return ret;
+        }
+
+        std::string stringFormatString(const std::string& fmt, const std::vector<std::string>& vec) {
+            try {
+                return stringFormat(fmt, vec);
+            }
+            catch (std::exception& e) {
+                return fmt;
+            }
+        }
+
+        std::vector<std::string> split(const std::string& str, char delimiter) {
+            std::vector<std::string> result;
+            std::string current;
+            for (char c : str) {
+                if (c == delimiter) {
+                    if (!current.empty()) {
+                        result.push_back(current);
+                    }
+                    current.clear();
+                } else {
+                    current += c;
+                }
+            }
+            if (!current.empty()) {
+                result.push_back(current);
+            }
+            return result;
+        }
+
         std::pair<std::string, std::string> split_once(const std::string& str, const std::string& delimiter) {
             size_t pos = str.find(delimiter);
-            if (pos == std::string::npos) {
-                return {str, ""};
+            if (pos != std::string::npos) {
+                return {str.substr(0, pos), str.substr(pos + delimiter.size())};
             }
-            return {str.substr(0, pos), str.substr(pos + delimiter.length())};
+            return {str, ""};
         }
     }
 
