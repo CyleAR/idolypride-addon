@@ -29,7 +29,7 @@ object FilesChecker {
     fun checkFiles() {
         val installedVersion = getInstalledVersion()
         val pluginVersion = getPluginVersion()
-        Log.d("IdolyprideLocal", "installedVer: $installedVersion, pluginVer: $pluginVersion")
+        Log.d("HoshimiLocal", "installedVer: $installedVersion, pluginVer: $pluginVersion")
 
         if (pluginVersion != installedVersion) {
             updateFiles()
@@ -37,11 +37,10 @@ object FilesChecker {
     }
 
     fun updateFiles() {
-        if (!this::filesDir.isInitialized) return
         if (filesUpdated) return
         filesUpdated = true
 
-        Log.i("IdolyprideLocal", "Updating files...")
+        Log.i("HoshimiLocal", "Updating files...")
         val pluginBasePath = File(filesDir, localizationFilesDir)
         if (!pluginBasePath.exists()) {
             pluginBasePath.mkdirs()
@@ -76,7 +75,7 @@ object FilesChecker {
             }
         }
 
-        Log.i("IdolyprideLocal", "Updated")
+        Log.i("HoshimiLocal", "Updated")
     }
 
     fun getPluginVersion(): String {
@@ -85,7 +84,7 @@ object FilesChecker {
         for (i in assets.list(localizationFilesDir)!!) {
             if (i.toString() == "version.txt") {
                 val stream = assets.open("$localizationFilesDir/$i")
-                return convertToString(stream)
+                return convertToString(stream).trim()
             }
         }
         return "0.0"
@@ -97,7 +96,7 @@ object FilesChecker {
 
         val versionFile = File(pluginFilesDir, "version.txt")
         if (!versionFile.exists()) return "0.0"
-        return versionFile.readText()
+        return versionFile.readText().trim()
     }
 
     fun convertToString(inputStream: InputStream?): String {
@@ -147,6 +146,7 @@ object FilesChecker {
         val genericTransDir = File(localFilesDir, "genericTrans")
         val genericTransFile = File(localFilesDir, "generic.json")
         val i18nFile = File(localFilesDir, "localization.json")
+        val masterTransDir = File(localFilesDir, "masterTrans")
 
         if (fontFile.exists()) {
             fontFile.delete()
@@ -156,6 +156,9 @@ object FilesChecker {
         }
         if (deleteRecursively(genericTransDir)) {
             genericTransDir.mkdirs()
+        }
+        if (deleteRecursively(masterTransDir)) {
+            masterTransDir.mkdirs()
         }
         if (genericTransFile.exists()) {
             genericTransFile.writeText("{}")

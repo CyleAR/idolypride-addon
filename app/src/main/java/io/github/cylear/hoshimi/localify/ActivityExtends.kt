@@ -27,7 +27,7 @@ fun <T> T.getConfigContent(): String where T : Activity {
     return if (configFile.exists()) {
         configFile.readText()
     } else {
-        Toast.makeText(this, "Initializing...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "检测到第一次启动，初始化配置文件...", Toast.LENGTH_SHORT).show()
         configFile.writeText("{}")
         "{}"
     }
@@ -63,7 +63,7 @@ fun <T> T.loadConfig() where T : Activity, T : IHasConfigItems {
     config = try {
         json.decodeFromString<IdolyprideConfig>(configStr)
     } catch (e: SerializationException) {
-        Toast.makeText(this, "?�置?�件异常: $e", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "配置文件异常: $e", Toast.LENGTH_SHORT).show()
         IdolyprideConfig()
     }
     saveConfig()
@@ -74,9 +74,28 @@ fun <T> T.loadConfig() where T : Activity, T : IHasConfigItems {
     } catch (e: SerializationException) {
         ProgramConfig()
     }
+    if (programConfig.useAPIAssetsURL.isEmpty()) {
+        programConfig.useAPIAssetsURL = getString(R.string.default_assets_check_api)
+    }
 }
 
 fun <T> T.onClickStartGame() where T : Activity, T : IHasConfigItems {
+    val lastStartPluginVersionFile = File(filesDir, "lastStartPluginVersion.txt")
+    val lastStartPluginVersion = if (lastStartPluginVersionFile.exists()) {
+        lastStartPluginVersionFile.readText()
+    }
+    else {
+        "null"
+    }
+    val packInfo = packageManager.getPackageInfo(packageName, 0)
+    val version = packInfo.versionName
+    val versionCode = packInfo.longVersionCode
+    val currentPluginVersion = "$version ($versionCode)"
+    if (lastStartPluginVersion != currentPluginVersion) {  // 插件版本更新，强制启用资源更新检查
+        lastStartPluginVersionFile.writeText(currentPluginVersion)
+        programConfig.checkBuiltInAssets = true
+    }
+
     val intent = Intent().apply {
         setClassName(
             "game.qualiarts.idolypride",
@@ -85,19 +104,40 @@ fun <T> T.onClickStartGame() where T : Activity, T : IHasConfigItems {
         putExtra("iprData", getConfigContent())
         putExtra(
             "localData",
-            getProgramConfigContent(listOf("transRemoteZipUrl", "p"), programConfig)
+            getProgramConfigContent(listOf("transRemoteZipUrl", "useAPIAssetsURL",
+                "localAPIAssetsVersion", "p"), programConfig)
         )
+        putExtra("lVerName", version)
         flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 
     val updateFile = File(filesDir, "update_trans.zip")
-    if (updateFile.exists()) {
+    val updateAPIFile = File(filesDir, "remote_files/remote.zip")
+    val targetFile = if (programConfig.useAPIAssets && updateAPIFile.exists()) {
+        updateAPIFile
+    }
+    else if (programConfig.useRemoteAssets && updateFile.exists()) {
+        updateFile
+    }
+    else {
+        null
+    }
+
+    if (targetFile != null) {
         val dirUri = FileProvider.getUriForFile(
             this,
-            "io.github.cylear.hoshimi.localify.fileprovider",
-            File(updateFile.absolutePath)
+            "io.gith.fileprovider",
+            File(targetFile.absolutePath)
         )
-        intent.setDataAndType(dirUri, "resource/file")
+        // intent.setDataAndType(dirUri, "resource/file")
+
+        grantUriPermission(
+            "game.qualiarts.idolypride",
+            dirUri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        )
+        intent.putExtra("resource_file", dirUri)
+        // intent.clipData = ClipData.newRawUri("resource_file", dirUri)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
     }
 

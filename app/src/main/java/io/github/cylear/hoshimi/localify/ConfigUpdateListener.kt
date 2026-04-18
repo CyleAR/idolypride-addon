@@ -1,5 +1,6 @@
 package io.github.cylear.hoshimi.localify
 
+import android.util.Log
 import android.view.KeyEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -10,16 +11,21 @@ import io.github.cylear.hoshimi.localify.models.ProgramConfigViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 
 
 interface ConfigListener {
     fun onEnabledChanged(value: Boolean)
     fun onForceExportResourceChanged(value: Boolean)
+    fun onLoginAsIOSChanged(value: Boolean)
     fun onTextTestChanged(value: Boolean)
+    fun onUseMasterTransChanged(value: Boolean)
     fun onReplaceFontChanged(value: Boolean)
+    fun onLazyInitChanged(value: Boolean)
     fun onEnableFreeCameraChanged(value: Boolean)
     fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onUnlockAllLiveChanged(value: Boolean)
+    fun onUnlockAllLiveCostumeChanged(value: Boolean)
     fun onLiveCustomeDressChanged(value: Boolean)
     fun onLiveCustomeHeadIdChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onLiveCustomeCostumeIdChanged(s: CharSequence, start: Int, before: Int, count: Int)
@@ -33,11 +39,8 @@ interface ConfigListener {
     fun onLodQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onGameOrientationChanged(checkedId: Int)
     fun onDumpTextChanged(value: Boolean)
-    fun onLoginAsIOSChanged(value: Boolean)
-    fun onUseMasterTransChanged(value: Boolean)
-    fun onUnlockAllLiveCostumeChanged(value: Boolean)
 
-    /* fun onEnableBreastParamChanged(value: Boolean)
+    fun onEnableBreastParamChanged(value: Boolean)
     fun onBDampingChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBStiffnessChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBSpringChanged(s: CharSequence, start: Int, before: Int, count: Int)
@@ -55,7 +58,7 @@ interface ConfigListener {
     fun onBScaleChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBUseArmCorrectionChanged(value: Boolean)
     fun onBUseScaleChanged(value: Boolean)
-    fun onBClickPresetChanged(index: Int) */
+    fun onBClickPresetChanged(index: Int)
     fun onPCheckBuiltInAssetsChanged(value: Boolean)
     fun onPUseRemoteAssetsChanged(value: Boolean)
     fun onPCleanLocalAssetsChanged(value: Boolean)
@@ -64,7 +67,14 @@ interface ConfigListener {
     fun mainPageAssetsViewDataUpdate(downloadAbleState: Boolean? = null,
                                      downloadProgressState: Float? = null,
                                      localResourceVersionState: String? = null,
-                                     errorString: String? = null)
+                                     errorString: String? = null,
+                                     localAPIResourceVersion: String? = null)
+    fun onPUseAPIAssetsChanged(value: Boolean)
+    fun onPUseAPIAssetsURLChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun mainUIConfirmStatUpdate(isShow: Boolean? = null, title: String? = null,
+                                content: String? = null,
+                                onConfirm: (() -> Unit)? = { mainUIConfirmStatUpdate(isShow = false) },
+                                onCancel: (() -> Unit)? = { mainUIConfirmStatUpdate(isShow = false) })
 }
 
 class UserConfigViewModelFactory(private val initialValue: IdolyprideConfig) : ViewModelProvider.Factory {
@@ -108,10 +118,20 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
         pushKeyEvent(KeyEvent(1145, 30))
     }
 
+    override fun onLoginAsIOSChanged(value: Boolean) {
+        config.loginAsIOS = value
+        saveConfig()
+    }
+
     override fun onReplaceFontChanged(value: Boolean) {
         config.replaceFont = value
         saveConfig()
         pushKeyEvent(KeyEvent(1145, 30))
+    }
+
+    override fun onLazyInitChanged(value: Boolean) {
+        config.lazyInit = value
+        saveConfig()
     }
 
     override fun onTextTestChanged(value: Boolean) {
@@ -119,13 +139,13 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
         saveConfig()
     }
 
-    override fun onDumpTextChanged(value: Boolean) {
-        config.dumpText = value
+    override fun onUseMasterTransChanged(value: Boolean) {
+        config.useMasterTrans = value
         saveConfig()
     }
 
-    override fun onLoginAsIOSChanged(value: Boolean) {
-        config.loginAsIOS = value
+    override fun onDumpTextChanged(value: Boolean) {
+        config.dumpText = value
         saveConfig()
     }
 
@@ -141,11 +161,6 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
 
     override fun onUnlockAllLiveCostumeChanged(value: Boolean) {
         config.unlockAllLiveCostume = value
-        saveConfig()
-    }
-
-    override fun onUseMasterTransChanged(value: Boolean) {
-        config.useMasterTrans = value
         saveConfig()
     }
 
@@ -302,7 +317,7 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
         saveConfig()
     }
 
-    /* override fun onEnableBreastParamChanged(value: Boolean) {
+    override fun onEnableBreastParamChanged(value: Boolean) {
         config.enableBreastParam = value
         saveConfig()
         checkConfigAndUpdateView()
@@ -468,7 +483,7 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
 
     override fun onBClickPresetChanged(index: Int) {
         val setData: FloatArray = when (index) {
-            // 0.33, 0.08, 0.7, 0.12, 0.25, 0.2, 0.8, 0, noUseArm ?�玩??
+            // 0.33, 0.08, 0.7, 0.12, 0.25, 0.2, 0.8, 0, noUseArm 啥玩意
             0 -> floatArrayOf(0.33f, 0.07f, 0.7f, 0.06f, 0.25f, 0.2f, 0.5f,
                 1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f)
             1 -> floatArrayOf(0.365f, 0.06f, 0.62f, 0.07f, 0.25f, 0.2f, 0.5f,
@@ -511,20 +526,33 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
 
         checkConfigAndUpdateView()
         saveConfig()
-    } */
+    }
 
     override fun onPCheckBuiltInAssetsChanged(value: Boolean) {
         programConfig.checkBuiltInAssets = value
+        if (value) {
+            programConfig.cleanLocalAssets = false
+        }
         saveProgramConfig()
     }
 
     override fun onPUseRemoteAssetsChanged(value: Boolean) {
         programConfig.useRemoteAssets = value
+        if (value) {
+            programConfig.checkBuiltInAssets = false
+            programConfig.cleanLocalAssets = false
+            programConfig.useAPIAssets = false
+        }
         saveProgramConfig()
     }
 
     override fun onPCleanLocalAssetsChanged(value: Boolean) {
         programConfig.cleanLocalAssets = value
+        if (value) {
+            programConfig.useRemoteAssets = false
+            programConfig.useAPIAssets = false
+            programConfig.checkBuiltInAssets = false
+        }
         saveProgramConfig()
     }
 
@@ -539,10 +567,59 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
     }
 
     override fun mainPageAssetsViewDataUpdate(downloadAbleState: Boolean?, downloadProgressState: Float?,
-                                              localResourceVersionState: String?, errorString: String?) {
-        downloadAbleState?.let { programConfigViewModel.downloadAbleState.value = downloadAbleState }
-        downloadProgressState?.let{ programConfigViewModel.downloadProgressState.value = downloadProgressState }
-        localResourceVersionState?.let{ programConfigViewModel.localResourceVersionState.value = localResourceVersionState }
-        errorString?.let{ programConfigViewModel.errorStringState.value = errorString }
+                                              localResourceVersionState: String?, errorString: String?,
+                                              localAPIResourceVersion: String?) {
+        downloadAbleState?.let { programConfigViewModel.downloadAbleState.value = it }
+        downloadProgressState?.let{ programConfigViewModel.downloadProgressState.value = it }
+        localResourceVersionState?.let{ programConfigViewModel.localResourceVersionState.value = it }
+        errorString?.let{ programConfigViewModel.errorStringState.value = it }
+        localAPIResourceVersion?.let{ programConfigViewModel.localAPIResourceVersionState.value = it }
+    }
+
+    override fun onPUseAPIAssetsChanged(value: Boolean) {
+        programConfig.useAPIAssets = value
+        if (value) {
+            programConfig.checkBuiltInAssets = false
+            programConfig.useRemoteAssets = false
+            programConfig.cleanLocalAssets = false
+        }
+        saveProgramConfig()
+    }
+
+    override fun onPUseAPIAssetsURLChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        programConfig.useAPIAssetsURL = s.toString()
+        saveProgramConfig()
+    }
+
+    override fun mainUIConfirmStatUpdate(isShow: Boolean?, title: String?, content: String?,
+        onConfirm: (() -> Unit)?, onCancel: (() -> Unit)?
+    ) {
+        val orig = programConfigViewModel.mainUIConfirmState.value
+        isShow?.let {
+            if (orig.isShow && it) {
+                Log.e(TAG, "Duplicate mainUIConfirmStat")
+            }
+            orig.isShow = it
+        }
+        title?.let { orig.title = it }
+        content?.let { orig.content = it }
+        onConfirm?.let { orig.onConfirm = {
+            try {
+                it()
+            }
+            finally {
+                mainUIConfirmStatUpdate(isShow = false)
+            }
+        } }
+        onCancel?.let { orig.onCancel = {
+            try {
+                it()
+            }
+            finally {
+                mainUIConfirmStatUpdate(isShow = false)
+            }
+        } }
+        orig.p = false
+        programConfigViewModel.mainUIConfirmState.value = orig.copy(p = true)
     }
 }

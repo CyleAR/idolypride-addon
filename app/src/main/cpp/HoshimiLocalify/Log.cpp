@@ -19,7 +19,6 @@
     std::string name(buffer);\
     delete[] buffer
 
-
 namespace HoshimiLocal::Log {
     namespace {
         std::queue<std::string> showingToasts{};
@@ -97,10 +96,8 @@ namespace HoshimiLocal::Log {
             g_javaVM->DetachCurrentThread();
         }).detach();
     }*/
-
-
-    void ShowToast(const std::string& text) {
-        showingToasts.push(text);
+void ShowToast(const std::string& text) {
+		InfoFmt("Toast: %s", text.c_str());
     }
 
     void ShowToast(const char* text) {

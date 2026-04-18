@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Update: 2024-3-2 22:11
  * Source: https://github.com/issuimo/UnityResolve.hpp
  * Author: github@issuimo

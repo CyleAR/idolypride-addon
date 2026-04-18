@@ -18,6 +18,9 @@ data class ProgramConfig(
     var useRemoteAssets: Boolean = false,
     var delRemoteAfterUpdate: Boolean = true,
     var cleanLocalAssets: Boolean = false,
+    var useAPIAssets: Boolean = false,
+    var useAPIAssetsURL: String = "",
+    var localAPIAssetsVersion: String = "0.0",
     var p: Boolean = false
 )
 

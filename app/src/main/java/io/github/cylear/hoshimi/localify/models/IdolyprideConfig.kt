@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class IdolyprideConfig (
     var dbgMode: Boolean = false,
     var enabled: Boolean = true,
+    var lazyInit: Boolean = true,
     var replaceFont: Boolean = true,
     var textTest: Boolean = false,
     var useMasterTrans: Boolean = true,
@@ -16,10 +17,11 @@ data class IdolyprideConfig (
     var targetFrameRate: Int = 0,
     var unlockAllLive: Boolean = false,
     var unlockAllLiveCostume: Boolean = false,
-    var loginAsIOS: Boolean = false,
     var enableLiveCustomeDress: Boolean = false,
     var liveCustomeHeadId: String = "",
     var liveCustomeCostumeId: String = "",
+
+    var loginAsIOS: Boolean = false,
 
     var useCustomeGraphicSettings: Boolean = false,
     var renderScale: Float = 0.77f,
@@ -29,7 +31,7 @@ data class IdolyprideConfig (
     var reflectionQualityLevel: Int = 4,  // 0~5
     var lodQualityLevel: Int = 4,  // 0~5
 
-    /* var enableBreastParam: Boolean = false,
+    var enableBreastParam: Boolean = false,
     var bDamping: Float = 0.33f,
     var bStiffness: Float = 0.08f,
     var bSpring: Float = 1.0f,
@@ -46,7 +48,7 @@ data class IdolyprideConfig (
     var bLimitYx: Float = 1.0f,
     var bLimitYy: Float = 1.0f,
     var bLimitZx: Float = 1.0f,
-    var bLimitZy: Float = 1.0f, */
+    var bLimitZy: Float = 1.0f,
 
     var pf: Boolean = false
 )

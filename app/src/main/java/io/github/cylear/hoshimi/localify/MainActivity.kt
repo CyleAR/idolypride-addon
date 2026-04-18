@@ -16,13 +16,16 @@ import androidx.lifecycle.ViewModelProvider
 import io.github.cylear.hoshimi.localify.hookUtils.FileHotUpdater
 import io.github.cylear.hoshimi.localify.hookUtils.FilesChecker
 import io.github.cylear.hoshimi.localify.hookUtils.MainKeyEventDispatcher
+import io.github.cylear.hoshimi.localify.mainUtils.RemoteAPIFilesChecker
+import io.github.cylear.hoshimi.localify.mainUtils.ShizukuApi
 import io.github.cylear.hoshimi.localify.mainUtils.json
+import io.github.cylear.hoshimi.localify.models.ConfirmStateModel
 import io.github.cylear.hoshimi.localify.models.IdolyprideConfig
 import io.github.cylear.hoshimi.localify.models.ProgramConfig
 import io.github.cylear.hoshimi.localify.models.ProgramConfigViewModel
 import io.github.cylear.hoshimi.localify.models.ProgramConfigViewModelFactory
 import io.github.cylear.hoshimi.localify.ui.pages.MainUI
-import io.github.cylear.hoshimi.localify.ui.theme.HoshimiLocalifyTheme
+import io.github.cylear.hoshimi.localify.ui.theme.GakumasLocalifyTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.encodeToString
@@ -44,10 +47,15 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
+    fun gotoPatchActivity() {
+        val intent = Intent(this, PatchActivity::class.java)
+        startActivity(intent)
+    }
+
     override fun saveConfig() {
         try {
             config.pf = false
-            viewModel.configState.value = config.copy( pf = true )  // ?�新 UI
+            viewModel.configState.value = config.copy( pf = true )  // 更新 UI
         }
         catch (e: RuntimeException) {
             Log.d(TAG, e.toString())
@@ -59,7 +67,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
     override fun saveProgramConfig() {
         try {
             programConfig.p = false
-            programConfigViewModel.configState.value = programConfig.copy( p = true )  // ?�新 UI
+            programConfigViewModel.configState.value = programConfig.copy( p = true )  // 更新 UI
         }
         catch (e: RuntimeException) {
             Log.d(TAG, e.toString())
@@ -75,6 +83,10 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
         try {
             val stream = assets.open("${FilesChecker.localizationFilesDir}/version.txt")
             resVersionText = FilesChecker.convertToString(stream)
+
+            if (programConfig.useAPIAssets) {
+                RemoteAPIFilesChecker.getLocalVersion(this)?.let { resVersionText = it }
+            }
 
             val packInfo = packageManager.getPackageInfo(packageName, 0)
             val version = packInfo.versionName
@@ -122,8 +134,10 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
         )
         programConfigViewModel = ViewModelProvider(this, programConfigFactory)[ProgramConfigViewModel::class.java]
 
+        ShizukuApi.init()
+
         setContent {
-            HoshimiLocalifyTheme(dynamicColor = false, darkTheme = false) {
+            GakumasLocalifyTheme(dynamicColor = false, darkTheme = false) {
                 MainUI(context = this)
             }
         }
@@ -132,7 +146,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
 
 
 @Composable
-fun getConfigState(context: MainActivity?, previewData: IdolyprideConfig?): State<IdolyprideConfig> {
+fun getConfigState(context: MainActivity?, previewData: GakumasConfig?): State<GakumasConfig> {
     return if (context != null) {
         context.viewModel.config.collectAsState()
     }
@@ -187,12 +201,34 @@ fun getProgramLocalResourceVersionState(context: MainActivity?): State<String> {
 }
 
 @Composable
+fun getProgramLocalAPIResourceVersionState(context: MainActivity?): State<String> {
+    return if (context != null) {
+        context.programConfigViewModel.localAPIResourceVersion.collectAsState()
+    }
+    else {
+        val configMSF = MutableStateFlow("null")
+        configMSF.asStateFlow().collectAsState()
+    }
+}
+
+@Composable
 fun getProgramDownloadErrorStringState(context: MainActivity?): State<String> {
     return if (context != null) {
         context.programConfigViewModel.errorString.collectAsState()
     }
     else {
         val configMSF = MutableStateFlow("")
+        configMSF.asStateFlow().collectAsState()
+    }
+}
+
+@Composable
+fun getMainUIConfirmState(context: MainActivity?, previewData: ConfirmStateModel? = null): State<ConfirmStateModel> {
+    return if (context != null) {
+        context.programConfigViewModel.mainUIConfirm.collectAsState()
+    }
+    else {
+        val configMSF = MutableStateFlow(previewData ?: ConfirmStateModel())
         configMSF.asStateFlow().collectAsState()
     }
 }
