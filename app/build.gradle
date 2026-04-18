@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.serialization)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -14,8 +15,9 @@ android {
         applicationId "io.github.cylear.hoshimi.localify"
         minSdk 29
         targetSdk 34
-        versionCode 2
-        versionName "v1.3"
+        versionCode 12
+        versionName "v1.0.0-alpha"
+        buildConfigField "String", "VERSION_NAME", "\"${versionName}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -73,8 +75,9 @@ android {
     applicationVariants.configureEach { variant ->
         variant.mergeAssetsProvider.configure { mergeAssetsTask ->
             mergeAssetsTask.doLast {
-                delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['hoshimi-local/idolypride-adapted-translation-data/**',
-                                                                           'hoshimi-local/IdolypridePreTranslation/**',
+                delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['hoshimi-local/hoshimi-adapted-translation-data/**',
+                                                                           'hoshimi-local/hoshimiPreTranslation/**',
+                                                                           'hoshimi-local/hoshimi-generic-strings-translation/**',
                                                                            'hoshimi-local/raw/**']))
             }
         }
@@ -82,6 +85,9 @@ android {
 }
 
 dependencies {
+    // implementation files('libs/lspatch_cleaned.jar')
+    // api 'com.google.guava:guava:32.0.1-jre'
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.material3)
@@ -90,6 +96,14 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.navigation.compose)
+    implementation files('libs/lspatch_cleaned.jar')
+
+    implementation(libs.zip4j)
+    implementation(libs.shizukuApi)
+    implementation(libs.rikka.shizuku.provider)
+    implementation(libs.rikka.refine)
+    implementation(libs.rikka.hidden.stub)
+    implementation(libs.hiddenapibypass)
 
     def composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)

@@ -16,7 +16,7 @@ import io.github.cylear.hoshimi.localify.ui.components.base.AutoSizeText
 
 
 @Composable
-fun GakuSwitch(modifier: Modifier = Modifier,
+fun IPSwitch(modifier: Modifier = Modifier,
                text: String = "",
                checked: Boolean = false,
                leftPart: @Composable (() -> Unit)? = null,
@@ -45,6 +45,6 @@ fun GakuSwitch(modifier: Modifier = Modifier,
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun GakuSwitchPreview() {
-    GakuSwitch(text = "Switch", checked = true)
+fun IPSwitchPreview() {
+    IPSwitch(text = "Switch", checked = true)
 }

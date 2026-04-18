@@ -1,6 +1,6 @@
 package io.github.cylear.hoshimi.localify.ui.pages.subPages
 
-import io.github.cylear.hoshimi.localify.ui.components.GakuGroupBox
+import io.github.cylear.hoshimi.localify.ui.components.IPGroupBox
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,8 +40,8 @@ import io.github.cylear.hoshimi.localify.mainUtils.FileDownloader
 import io.github.cylear.hoshimi.localify.models.IdolyprideConfig
 import io.github.cylear.hoshimi.localify.models.ResourceCollapsibleBoxViewModel
 import io.github.cylear.hoshimi.localify.models.ResourceCollapsibleBoxViewModelFactory
-import io.github.cylear.hoshimi.localify.ui.components.GakuRadio
-import io.github.cylear.hoshimi.localify.ui.components.GakuSwitch
+import io.github.cylear.hoshimi.localify.ui.components.IPRadio
+import io.github.cylear.hoshimi.localify.ui.components.IPSwitch
 import io.github.cylear.hoshimi.localify.ui.components.GakuTextInput
 import io.github.cylear.hoshimi.localify.ui.components.IPButton
 import io.github.cylear.hoshimi.localify.ui.components.base.CollapsibleBox
@@ -126,14 +126,14 @@ fun HomePage(modifier: Modifier = Modifier,
         .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // ?€?€ ê¸°ë³¸ ?¤ì • ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        // ?ï¿½?ï¿½ ê¸°ë³¸ ?ï¿½ì • ?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½
         item {
-            GakuGroupBox(modifier = modifier, stringResource(R.string.basic_settings)) {
+            IPGroupBox(modifier = modifier, stringResource(R.string.basic_settings)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    GakuSwitch(modifier, stringResource(R.string.enable_plugin), checked = config.value.enabled) {
+                    IPSwitch(modifier, stringResource(R.string.enable_plugin), checked = config.value.enabled) {
                             v -> context?.onEnabledChanged(v)
                     }
-                    GakuSwitch(modifier, stringResource(R.string.replace_font), checked = config.value.replaceFont) {
+                    IPSwitch(modifier, stringResource(R.string.replace_font), checked = config.value.replaceFont) {
                             v -> context?.onReplaceFontChanged(v)
                     }
                 }
@@ -141,9 +141,9 @@ fun HomePage(modifier: Modifier = Modifier,
             Spacer(Modifier.height(6.dp))
         }
 
-        // ?€?€ ê·¸ëž˜???¤ì • ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        // ?ï¿½?ï¿½ ê·¸ëž˜???ï¿½ì • ?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½
         item {
-            GakuGroupBox(modifier = modifier, contentPadding = 0.dp, title = stringResource(R.string.graphic_settings)) {
+            IPGroupBox(modifier = modifier, contentPadding = 0.dp, title = stringResource(R.string.graphic_settings)) {
                 LazyColumn(modifier = Modifier
                     .sizeIn(maxHeight = screenH),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -162,7 +162,7 @@ fun HomePage(modifier: Modifier = Modifier,
                             keyboardOptions = keyboardOptionsNumber)
                     }
 
-                    // ?”ë©´ ë°©í–¥
+                    // ?ï¿½ë©´ ë°©í–¥
                     item {
                         Column(modifier = Modifier.padding(start = 8.dp, end = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -174,15 +174,15 @@ fun HomePage(modifier: Modifier = Modifier,
                                         .height(40.dp)
                                         .weight(1f)
                                 }
-                                GakuRadio(modifier = radioModifier,
+                                IPRadio(modifier = radioModifier,
                                     text = stringResource(R.string.orientation_orig),
                                     selected = config.value.gameOrientation == 0,
                                     onClick = { context?.onGameOrientationChanged(0) })
-                                GakuRadio(modifier = radioModifier,
+                                IPRadio(modifier = radioModifier,
                                     text = stringResource(R.string.orientation_portrait),
                                     selected = config.value.gameOrientation == 1,
                                     onClick = { context?.onGameOrientationChanged(1) })
-                                GakuRadio(modifier = radioModifier,
+                                IPRadio(modifier = radioModifier,
                                     text = stringResource(R.string.orientation_landscape),
                                     selected = config.value.gameOrientation == 2,
                                     onClick = { context?.onGameOrientationChanged(2) })
@@ -197,9 +197,9 @@ fun HomePage(modifier: Modifier = Modifier,
                         )
                     }
 
-                    // ì»¤ìŠ¤?€ ê·¸ëž˜???¤ì •
+                    // ì»¤ìŠ¤?ï¿½ ê·¸ëž˜???ï¿½ì •
                     item {
-                        GakuSwitch(modifier.padding(start = 8.dp, end = 8.dp),
+                        IPSwitch(modifier.padding(start = 8.dp, end = 8.dp),
                             stringResource(R.string.useCustomeGraphicSettings),
                             checked = config.value.useCustomeGraphicSettings) {
                                 v -> context?.onUseCustomeGraphicSettingsChanged(v)
@@ -216,7 +216,7 @@ fun HomePage(modifier: Modifier = Modifier,
                                 .fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                // ?„ë¦¬??ë²„íŠ¼
+                                // ?ï¿½ë¦¬??ë²„íŠ¼
                                 item {
                                     Row(modifier = modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(2.dp)) {

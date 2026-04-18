@@ -1,3 +1,5 @@
+#include "shadowhook.h"
+#include <android/log.h>
 #include "Hook.h"
 #include "Plugin.h"
 #include "Log.h"
@@ -22,6 +24,25 @@ extern std::filesystem::path hoshimiLocalPath;
 	name##_Type name##_Addr = nullptr;                                                             \
 	name##_Type name##_Orig = nullptr;                                                             \
 	returnType name##_Hook params
+
+#define ADD_HOOK(name, addr)                                                                       \
+	name##_Addr = reinterpret_cast<name##_Type>(addr);                                             \
+	if (addr) {                                                                                    \
+    	auto stub = hookInstaller->InstallHook(reinterpret_cast<void*>(addr),                      \
+                                               reinterpret_cast<void*>(name##_Hook),               \
+                                               reinterpret_cast<void**>(&name##_Orig));            \
+        if (stub == NULL) {                                                                        \
+            int error_num = shadowhook_get_errno();                                                \
+            const char *error_msg = shadowhook_to_errmsg(error_num);                               \
+            Log::ErrorFmt("ADD_HOOK: %s at %p failed: %s", #name, addr, error_msg);                \
+        }                                                                                          \
+        else {                                                                                     \
+            hookedStubs.emplace(stub);                                                             \
+            HoshimiLocal::Log::InfoFmt("ADD_HOOK: %s at %p", #name, addr);                         \
+        }                                                                                          \
+    }                                                                                              \
+    else HoshimiLocal::Log::ErrorFmt("Hook failed: %s is NULL", #name, addr);                      \
+    if (Config::lazyInit) UnityResolveProgress::classProgress.current++
 
 /*
 void UnHookAll() {
@@ -1558,6 +1579,7 @@ namespace HoshimiLocal::HookMain {
             }
         }*/
 
+/*
         auto UserIdolCardSkinCollection_klass = Il2cppUtils::GetClass("Assembly-CSharp.dll", "Campus.Common.User",
                                                                       "UserIdolCardSkinCollection");
         auto UserIdolCardSkinCollection_Exists_mtd = Il2cppUtils::il2cpp_class_get_method_from_name(UserIdolCardSkinCollection_klass->address, "Exists", 1);
@@ -1594,6 +1616,7 @@ namespace HoshimiLocal::HookMain {
         ADD_HOOK(PictureBookLiveSelectScreenPresenter_OnSelectMusic,
             Il2cppUtils::GetMethodPointer("Assembly-CSharp.dll", "Campus.OutGame",
                 "PictureBookLiveSelectScreenPresenter", "OnSelectMusicAsync"));
+*/
 
         ADD_HOOK(VLDOF_IsActive,
                  Il2cppUtils::GetMethodPointer("Unity.RenderPipelines.Universal.Runtime.dll", "VL.Rendering",
@@ -1682,7 +1705,7 @@ namespace HoshimiLocal::HookMain {
     // 77 2640 5000
 
     DEFINE_HOOK(int, il2cpp_init, (const char* domain_name)) {
-        const auto ret = 0;
+        const auto ret = il2cpp_init_Orig(domain_name);
         // InjectFunctions();
 
         Log::Info("Waiting for config...");
@@ -1701,7 +1724,7 @@ namespace HoshimiLocal::HookMain {
             UnityResolveProgress::startInit = true;
             UnityResolveProgress::assembliesProgress.total = 2;
             UnityResolveProgress::assembliesProgress.current = 1;
-            UnityResolveProgress::classProgress.total = 36;
+            UnityResolveProgress::classProgress.total = 29;
             UnityResolveProgress::classProgress.current = 0;
         }
 
@@ -1731,7 +1754,8 @@ namespace HoshimiLocal::Hook {
 
         Log::Info("Installing hook");
 
-        HookMain::il2cpp_init_Hook(nullptr);
+        ADD_HOOK(HookMain::il2cpp_init,
+            Plugin::GetInstance().GetHookInstaller()->LookupSymbol("il2cpp_init"));
 
         Log::Info("Hook installed");
     }

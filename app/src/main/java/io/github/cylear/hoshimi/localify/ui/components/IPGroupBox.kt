@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import io.github.cylear.hoshimi.localify.R
 
 @Composable
-fun GakuGroupBox(
+fun IPGroupBox(
     modifier: Modifier = Modifier,
     title: String = "Title",
     maxWidth: Dp = 500.dp,
@@ -98,8 +98,8 @@ fun GakuGroupBox(
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun PreviewGakuGroupBox() {
-    GakuGroupBox(
+fun PreviewIPGroupBox() {
+    IPGroupBox(
         title = "GroupBox Title"
     ) {
         Column {

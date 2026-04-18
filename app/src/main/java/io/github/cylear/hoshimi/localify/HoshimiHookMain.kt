@@ -47,7 +47,7 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var nativeLibLoadSuccess: Boolean
     private var alreadyInitialized = false
     private val targetPackageName = "game.qualiarts.idolypride"
-    private val nativeLibName = "IdolyprideLocalify"
+    private val nativeLibName = "HoshimiLocalify"
 
     private var iprDataInited = false
 

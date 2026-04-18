@@ -1,6 +1,6 @@
 package io.github.cylear.hoshimi.localify.ui.pages.subPages
 
-import io.github.cylear.hoshimi.localify.ui.components.GakuGroupBox
+import io.github.cylear.hoshimi.localify.ui.components.IPGroupBox
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +26,7 @@ import io.github.cylear.hoshimi.localify.getConfigState
 import io.github.cylear.hoshimi.localify.models.BreastCollapsibleBoxViewModel
 import io.github.cylear.hoshimi.localify.models.BreastCollapsibleBoxViewModelFactory
 import io.github.cylear.hoshimi.localify.models.IdolyprideConfig
-import io.github.cylear.hoshimi.localify.ui.components.GakuSwitch
+import io.github.cylear.hoshimi.localify.ui.components.IPSwitch
 
 
 @Composable
@@ -48,11 +48,11 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
         .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // ?€?€ ì¹´ë©”???¤ì • ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        // ?ï¿½?ï¿½ ì¹´ë©”???ï¿½ì • ?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½
         item {
-            GakuGroupBox(modifier, stringResource(R.string.camera_settings)) {
+            IPGroupBox(modifier, stringResource(R.string.camera_settings)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    GakuSwitch(modifier, stringResource(R.string.enable_free_camera), checked = config.value.enableFreeCamera) {
+                    IPSwitch(modifier, stringResource(R.string.enable_free_camera), checked = config.value.enableFreeCamera) {
                             v -> context?.onEnableFreeCameraChanged(v)
                     }
                 }
@@ -60,23 +60,23 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
             Spacer(Modifier.height(6.dp))
         }
 
-        // ?€?€ ?”ë²„ê·?/ ê³ ê¸‰ ?¤ì • ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        // ?ï¿½?ï¿½ ?ï¿½ë²„ï¿½?/ ê³ ê¸‰ ?ï¿½ì • ?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½
         item {
-            GakuGroupBox(modifier, stringResource(R.string.debug_settings)) {
+            IPGroupBox(modifier, stringResource(R.string.debug_settings)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    GakuSwitch(modifier, stringResource(R.string.useMasterDBTrans), checked = config.value.useMasterTrans) {
+                    IPSwitch(modifier, stringResource(R.string.useMasterDBTrans), checked = config.value.useMasterTrans) {
                         v -> context?.onUseMasterTransChanged(v)
                     }
-                    GakuSwitch(modifier, stringResource(R.string.text_hook_test_mode), checked = config.value.textTest) {
+                    IPSwitch(modifier, stringResource(R.string.text_hook_test_mode), checked = config.value.textTest) {
                         v -> context?.onTextTestChanged(v)
                     }
-                    GakuSwitch(modifier, stringResource(R.string.export_text), checked = config.value.dumpText) {
+                    IPSwitch(modifier, stringResource(R.string.export_text), checked = config.value.dumpText) {
                         v -> context?.onDumpTextChanged(v)
                     }
-                    GakuSwitch(modifier, stringResource(R.string.force_export_resource), checked = config.value.forceExportResource) {
+                    IPSwitch(modifier, stringResource(R.string.force_export_resource), checked = config.value.forceExportResource) {
                         v -> context?.onForceExportResourceChanged(v)
                     }
-                    GakuSwitch(modifier, "Login as iOS", checked = config.value.loginAsIOS) {
+                    IPSwitch(modifier, "Login as iOS", checked = config.value.loginAsIOS) {
                         v -> context?.onLoginAsIOSChanged(v)
                     }
                 }
@@ -84,16 +84,16 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
             Spacer(Modifier.height(6.dp))
         }
 
-        // ?€?€ ?ŒìŠ¤??ëª¨ë“œ: LIVE (dbgMode ?„ìš©) ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
+        // ?ï¿½?ï¿½ ?ï¿½ìŠ¤??ëª¨ë“œ: LIVE (dbgMode ?ï¿½ìš©) ?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½?ï¿½
         item {
             if (config.value.dbgMode) {
-                GakuGroupBox(modifier, stringResource(R.string.test_mode_live)) {
+                IPGroupBox(modifier, stringResource(R.string.test_mode_live)) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        GakuSwitch(modifier, stringResource(R.string.unlockAllLive),
+                        IPSwitch(modifier, stringResource(R.string.unlockAllLive),
                             checked = config.value.unlockAllLive) {
                                 v -> context?.onUnlockAllLiveChanged(v)
                         }
-                        GakuSwitch(modifier, stringResource(R.string.unlockAllLiveCostume),
+                        IPSwitch(modifier, stringResource(R.string.unlockAllLiveCostume),
                             checked = config.value.unlockAllLiveCostume) {
                                 v -> context?.onUnlockAllLiveCostumeChanged(v)
                         }

@@ -6,6 +6,12 @@
 #include <queue>
 #include <cstdarg>
 
+#include <android/log.h>
+
+extern JavaVM* g_javaVM;
+extern jclass g_gakumasHookMainClass;
+extern jmethodID showToastMethodId;
+
 #define GetParamStringResult(name)\
     va_list args;\
     va_start(args, fmt);\
@@ -96,8 +102,8 @@ namespace HoshimiLocal::Log {
             g_javaVM->DetachCurrentThread();
         }).detach();
     }*/
-void ShowToast(const std::string& text) {
-		InfoFmt("Toast: %s", text.c_str());
+    void ShowToast(const std::string& text) {
+        showingToasts.push(text);
     }
 
     void ShowToast(const char* text) {
@@ -117,5 +123,21 @@ void ShowToast(const std::string& text) {
         const auto ret = showingToasts.front();
         showingToasts.pop();
         return ret;
+    }
+
+    void ToastLoop(JNIEnv *env, jclass clazz) {
+        const auto toastString = GetQueuedToast();
+        if (toastString.empty()) return;
+
+        static auto _showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
+
+        if (env && clazz && _showToastMethodId) {
+            jstring param = env->NewStringUTF(toastString.c_str());
+            env->CallStaticVoidMethod(clazz, _showToastMethodId, param);
+            env->DeleteLocalRef(param);
+        }
+        else {
+            _showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
+        }
     }
 }

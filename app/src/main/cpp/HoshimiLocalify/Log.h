@@ -2,6 +2,8 @@
 #define IDOLYPRIDE_LOCALIFY_LOG_H
 
 #include <string>
+#include <jni.h>
+
 
 namespace HoshimiLocal::Log {
     std::string StringFormat(const char* fmt, ...);
@@ -16,6 +18,7 @@ namespace HoshimiLocal::Log {
 
     void ShowToast(const char* text);
     void ShowToastFmt(const char* fmt, ...);
+    void ToastLoop(JNIEnv *env, jclass clazz);
 }
 
 #endif //IDOLYPRIDE_LOCALIFY_LOG_H

@@ -25,7 +25,7 @@ import io.github.cylear.hoshimi.localify.models.ProgramConfig
 import io.github.cylear.hoshimi.localify.models.ProgramConfigViewModel
 import io.github.cylear.hoshimi.localify.models.ProgramConfigViewModelFactory
 import io.github.cylear.hoshimi.localify.ui.pages.MainUI
-import io.github.cylear.hoshimi.localify.ui.theme.GakumasLocalifyTheme
+import io.github.cylear.hoshimi.localify.ui.theme.HoshimiLocalifyTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.encodeToString
@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
         ShizukuApi.init()
 
         setContent {
-            GakumasLocalifyTheme(dynamicColor = false, darkTheme = false) {
+            HoshimiLocalifyTheme(dynamicColor = false, darkTheme = false) {
                 MainUI(context = this)
             }
         }
@@ -146,7 +146,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
 
 
 @Composable
-fun getConfigState(context: MainActivity?, previewData: GakumasConfig?): State<GakumasConfig> {
+fun getConfigState(context: MainActivity?, previewData: IdolyprideConfig?): State<IdolyprideConfig> {
     return if (context != null) {
         context.viewModel.config.collectAsState()
     }

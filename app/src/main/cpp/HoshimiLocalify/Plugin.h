@@ -4,6 +4,7 @@
 #include "Misc.hpp"
 #include <string>
 #include <memory>
+#include <jni.h>
 
 namespace HoshimiLocal {
     struct HookInstaller

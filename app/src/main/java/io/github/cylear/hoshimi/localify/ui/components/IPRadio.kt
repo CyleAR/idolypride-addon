@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import io.github.cylear.hoshimi.localify.ui.components.base.AutoSizeText
 
 @Composable
-fun GakuRadio(
+fun IPRadio(
     modifier: Modifier = Modifier,
     text: String,
     selected: Boolean,
@@ -72,6 +72,6 @@ fun GakuRadio(
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO, widthDp = 100, heightDp = 40)
 @Composable
-fun GakuRadioPreview() {
-    GakuRadio(text = "GakuRadioooo", selected = true, onClick = {})
+fun IPRadioPreview() {
+    IPRadio(text = "IPRadioooo", selected = true, onClick = {})
 }
