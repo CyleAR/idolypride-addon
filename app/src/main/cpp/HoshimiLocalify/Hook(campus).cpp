@@ -1024,25 +1024,25 @@ namespace HoshimiLocal::HookMain {
         return VLDOF_IsActive_Orig(self);
     }
 
-    DEFINE_HOOK(void, SolisQualityManager_set_TargetFrameRate, (void* self, float value)) {
+    DEFINE_HOOK(void, CampusQualityManager_set_TargetFrameRate, (void* self, float value)) {
         // Log::InfoFmt("CampusQualityManager_set_TargetFrameRate: %f", value);
         const auto configFps = Config::targetFrameRate;
-        SolisQualityManager_set_TargetFrameRate_Orig(self, configFps == 0 ? value : (float)configFps);
+        CampusQualityManager_set_TargetFrameRate_Orig(self, configFps == 0 ? value : (float)configFps);
     }
 
-    DEFINE_HOOK(void, SolisQualityManager_ApplySetting, (void* self, int qualitySettingsLevel, int maxBufferPixel, float renderScale, int volumeIndex)) {
+    DEFINE_HOOK(void, CampusQualityManager_ApplySetting, (void* self, int qualitySettingsLevel, int maxBufferPixel, float renderScale, int volumeIndex)) {
         if (Config::targetFrameRate != 0) {
-            SolisQualityManager_set_TargetFrameRate_Orig(self, Config::targetFrameRate);
+            CampusQualityManager_set_TargetFrameRate_Orig(self, Config::targetFrameRate);
         }
         if (Config::useCustomeGraphicSettings) {
-            static auto SetReflectionQuality = Il2cppUtils::GetMethod("solis-submodule.Runtime.dll", "Solis.Common",
-                                                                      "SolisQualityManager", "SetReflectionQuality");
-            static auto SetLODQuality = Il2cppUtils::GetMethod("solis-submodule.Runtime.dll", "Solis.Common",
-                                                               "SolisQualityManager", "SetLODQuality");
+            static auto SetReflectionQuality = Il2cppUtils::GetMethod("campus-submodule.Runtime.dll", "Campus.Common",
+                                                                      "CampusQualityManager", "SetReflectionQuality");
+            static auto SetLODQuality = Il2cppUtils::GetMethod("campus-submodule.Runtime.dll", "Campus.Common",
+                                                               "CampusQualityManager", "SetLODQuality");
 
             static auto Enum_GetValues = Il2cppUtils::GetMethod("mscorlib.dll", "System", "Enum", "GetValues");
 
-            static auto QualityLevel_klass = Il2cppUtils::GetClass("solis-submodule.Runtime.dll", "Solis.Common", "QualityLevel");
+            static auto QualityLevel_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll", "", "QualityLevel");
 
             static auto values = Enum_GetValues->Invoke<UnityResolve::UnityType::Array<int>*>(QualityLevel_klass->GetType())->ToVector();
             if (values.empty()) {
@@ -1063,7 +1063,7 @@ namespace HoshimiLocal::HookMain {
                               qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex, Config::lodQualityLevel, Config::reflectionQualityLevel);
         }
 
-        SolisQualityManager_ApplySetting_Orig(self, qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex);
+        CampusQualityManager_ApplySetting_Orig(self, qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex);
     }
 
     DEFINE_HOOK(void, UIManager_UpdateRenderTarget, (UnityResolve::UnityType::Vector2 ratio, void* mtd)) {
@@ -1152,11 +1152,11 @@ namespace HoshimiLocal::HookMain {
         }
     }
 
-    DEFINE_HOOK(void, SolisActorController_LateUpdate, (void* self, void* mtd)) {
-        static auto SolisActorController_klass = Il2cppUtils::GetClass("solis-submodule.Runtime.dll",
-                                                                        "Solis.Common", "SolisActorController");
-        static auto rootBody_field = SolisActorController_klass->Get<UnityResolve::Field>("_rootBody");
-        static auto parentKlass = UnityResolve::Invoke<void*>("il2cpp_class_get_parent", SolisActorController_klass->address);
+    DEFINE_HOOK(void, CampusActorController_LateUpdate, (void* self, void* mtd)) {
+        static auto CampusActorController_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll",
+                                                                        "Campus.Common", "CampusActorController");
+        static auto rootBody_field = CampusActorController_klass->Get<UnityResolve::Field>("_rootBody");
+        static auto parentKlass = UnityResolve::Invoke<void*>("il2cpp_class_get_parent", CampusActorController_klass->address);
 
         if (!Config::enableFreeCamera || (IPCamera::GetCameraMode() == IPCamera::CameraMode::FREE)) {
             if (needRestoreHides) {
@@ -1164,14 +1164,14 @@ namespace HoshimiLocal::HookMain {
                 HideHead(nullptr, false);
                 HideHead(nullptr, true);
             }
-            return SolisActorController_LateUpdate_Orig(self, mtd);
+            return CampusActorController_LateUpdate_Orig(self, mtd);
         }
 
         static auto GetHumanBodyBoneTransform_mtd = Il2cppUtils::il2cpp_class_get_method_from_name(parentKlass, "GetHumanBodyBoneTransform", 1);
         static auto GetHumanBodyBoneTransform = reinterpret_cast<UnityResolve::UnityType::Transform* (*)(void*, int)>(
                 GetHumanBodyBoneTransform_mtd->methodPointer
                 );
-        static auto get_index_mtd = Il2cppUtils::il2cpp_class_get_method_from_name(SolisActorController_klass->address, "get_index", 0);
+        static auto get_index_mtd = Il2cppUtils::il2cpp_class_get_method_from_name(CampusActorController_klass->address, "get_index", 0);
         static auto get_Index = get_index_mtd ? reinterpret_cast<int (*)(void*)>(
                 get_index_mtd->methodPointer) : [](void*){return 0;};
 
@@ -1218,7 +1218,7 @@ namespace HoshimiLocal::HookMain {
 
         }
 
-        SolisActorController_LateUpdate_Orig(self, mtd);
+        CampusActorController_LateUpdate_Orig(self, mtd);
     }
 
     DEFINE_HOOK(bool, PlatformInformation_get_IsAndroid, ()) {
@@ -1617,7 +1617,7 @@ namespace HoshimiLocal::HookMain {
             Il2cppUtils::GetMethodPointer("Assembly-CSharp.dll", "Campus.OutGame",
                 "PictureBookLiveSelectScreenPresenter", "OnSelectMusicAsync"));
 */
-/*
+
         ADD_HOOK(VLDOF_IsActive,
                  Il2cppUtils::GetMethodPointer("Unity.RenderPipelines.Universal.Runtime.dll", "VL.Rendering",
                                                "VLDOF", "IsActive"));
@@ -1625,10 +1625,10 @@ namespace HoshimiLocal::HookMain {
         ADD_HOOK(CampusQualityManager_ApplySetting,
                  Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
                                                "CampusQualityManager", "ApplySetting"));
-*/
-//        ADD_HOOK(UIManager_UpdateRenderTarget,
-//                 Il2cppUtils::GetMethodPointer("ADV.Runtime.dll", "Solis.ADV",
-//                                               "UIManager", "UpdateRenderTarget"));
+
+        ADD_HOOK(UIManager_UpdateRenderTarget,
+                 Il2cppUtils::GetMethodPointer("ADV.Runtime.dll", "Campus.ADV",
+                                               "UIManager", "UpdateRenderTarget"));
         ADD_HOOK(VLSRPCameraController_UpdateRenderTarget,
                  Il2cppUtils::GetMethodPointer("vl-unity.Runtime.dll", "VL.Rendering",
                                                "VLSRPCameraController", "UpdateRenderTarget",
@@ -1639,19 +1639,19 @@ namespace HoshimiLocal::HookMain {
                                                "VLUtility", "GetLimitedResolution",
                                                {"*", "*", "*", "*", "*", "*"}));
 
-        // ADD_HOOK(CampusActorModelParts_OnRegisterBone,
-        //          Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
-        //                                        "CampusActorModelParts", "OnRegisterBone"));
-        ADD_HOOK(SolisActorController_LateUpdate,
-                 Il2cppUtils::GetMethodPointer("solis-submodule.Runtime.dll", "Solis.Common",
-                                               "SolisActorController", "LateUpdate"));
+        ADD_HOOK(CampusActorModelParts_OnRegisterBone,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusActorModelParts", "OnRegisterBone"));
+        ADD_HOOK(CampusActorController_LateUpdate,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusActorController", "LateUpdate"));
 
         ADD_HOOK(PlatformInformation_get_IsAndroid, Il2cppUtils::GetMethodPointer("Firebase.Platform.dll", "Firebase.Platform",
                                                                          "PlatformInformation", "get_IsAndroid"));
         ADD_HOOK(PlatformInformation_get_IsIOS, Il2cppUtils::GetMethodPointer("Firebase.Platform.dll", "Firebase.Platform",
                                                                                   "PlatformInformation", "get_IsIOS"));
 
-        auto api_klass = Il2cppUtils::GetClass("Assembly-CSharp.dll", "Solis.Common.Network", "Api");
+        auto api_klass = Il2cppUtils::GetClass("Assembly-CSharp.dll", "Campus.Common.Network", "Api");
         if (api_klass) {
             // Qua.Network.ApiBase
             auto api_parent = UnityResolve::Invoke<Il2cppUtils::Il2CppClassHead*>("il2cpp_class_get_parent", api_klass->address);
@@ -1670,13 +1670,13 @@ namespace HoshimiLocal::HookMain {
             Log::DebugFmt("CampusActorController.%s at %p", i->name.c_str(), i->function);
         }*/
 
-        // ADD_HOOK(CampusActorAnimation_Setup,
-        //          Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
-        //                                        "CampusActorAnimation", "Setup"));
+        ADD_HOOK(CampusActorAnimation_Setup,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusActorAnimation", "Setup"));
 
-        ADD_HOOK(SolisQualityManager_set_TargetFrameRate,
-                 Il2cppUtils::GetMethodPointer("solis-submodule.Runtime.dll", "Solis.Common",
-                                               "SolisQualityManager", "set_TargetFrameRate"));
+        ADD_HOOK(CampusQualityManager_set_TargetFrameRate,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusQualityManager", "set_TargetFrameRate"));
 
         ADD_HOOK(Internal_LogException, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.DebugLogHandler::Internal_LogException(System.Exception,UnityEngine.Object)"));
@@ -1685,7 +1685,7 @@ namespace HoshimiLocal::HookMain {
 
         // 双端
         ADD_HOOK(InternalSetOrientationAsync,
-            Il2cppUtils::GetMethodPointer("solis-submodule.Runtime.dll", "Solis.Common",
+            Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
                 "ScreenOrientationControllerBase", "InternalSetOrientationAsync"));
 
         ADD_HOOK(Unity_set_position_Injected, Il2cppUtils::il2cpp_resolve_icall(
