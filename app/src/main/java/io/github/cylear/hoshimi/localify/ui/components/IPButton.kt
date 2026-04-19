@@ -44,7 +44,7 @@ fun IPButton(
     val gradient = remember(buttonSize) {
         Brush.linearGradient(
             colors = bgColors
-                ?: if (enabled) listOf(Color(0xFFFF5F19), Color(0xFFFFA028)) else
+                ?: if (enabled) listOf(Color(0xFF1428FF), Color(0xFF5335FA)) else
                     listOf(Color(0xFFF9F9F9), Color(0xFFF0F0F0)),
             start = Offset(0f, 0f),
             end = Offset(buttonSize.width.toFloat(), buttonSize.height.toFloat()) // 动态终点
