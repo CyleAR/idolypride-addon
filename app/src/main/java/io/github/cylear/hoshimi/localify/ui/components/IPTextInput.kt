@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun GakuTextInput(
+fun IPTextInput(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -181,8 +181,8 @@ fun OutlinedTextFieldNoPadding(
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun GakuTextInputPreview() {
-    GakuTextInput(modifier = Modifier.height(50.dp),
+fun IPTextInputPreview() {
+    IPTextInput(modifier = Modifier.height(50.dp),
         fontSize = 16f,
         value = "123456", onValueChange = { }, label = { Text("Label") })
 }

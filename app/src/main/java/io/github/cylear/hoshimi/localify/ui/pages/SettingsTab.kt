@@ -5,9 +5,12 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -25,7 +28,8 @@ import androidx.compose.ui.unit.dp
 import io.github.cylear.hoshimi.localify.MainActivity
 import io.github.cylear.hoshimi.localify.models.IdolyprideConfig
 import io.github.cylear.hoshimi.localify.onClickStartGame
-import io.github.cylear.hoshimi.localify.ui.components.GakuTabRow
+import io.github.cylear.hoshimi.localify.ui.components.IPTabRow
+import io.github.cylear.hoshimi.localify.ui.components.icons.AutoFixHigh
 import io.github.cylear.hoshimi.localify.ui.pages.subPages.AboutPage
 import io.github.cylear.hoshimi.localify.ui.pages.subPages.AdvanceSettingsPage
 import io.github.cylear.hoshimi.localify.ui.pages.subPages.HomePage
@@ -66,17 +70,30 @@ fun SettingsTabs(modifier: Modifier = Modifier,
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 6.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                FloatingActionButton(
-                    onClick = { context?.onClickStartGame() },
-                    modifier = Modifier.align(Alignment.End),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
-                ) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "StartGame")
+                Row(modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    FloatingActionButton(
+                        onClick = { context?.gotoPatchActivity() },
+                        // modifier = Modifier.align(Alignment.End),
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape
+                    ) {
+                        Icon(modifier = Modifier.size(24.dp),
+                            imageVector = Icons.Outlined.AutoFixHigh,
+                            contentDescription = "GotoPatch")
+                    }
+                    FloatingActionButton(
+                        onClick = { context?.onClickStartGame() },
+                        //modifier = Modifier.align(Alignment.End),
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape
+                    ) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = "StartGame")
+                    }
                 }
 
-                GakuTabRow(modifier, pagerState, titles) { }
+                IPTabRow(modifier, pagerState, titles) { }
             }
         }
     }

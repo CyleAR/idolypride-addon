@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun GakuProgressBar(modifier: Modifier = Modifier, progress: Float, isError: Boolean = false) {
+fun IPProgressBar(modifier: Modifier = Modifier, progress: Float, isError: Boolean = false) {
     val animatedProgress by animateFloatAsState(targetValue = progress, label = "progressAnime")
 
     Row(
@@ -50,6 +50,6 @@ fun GakuProgressBar(modifier: Modifier = Modifier, progress: Float, isError: Boo
 
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun GakuProgressBarPreview() {
-    GakuProgressBar(progress = 0.25f)
+fun IPProgressBarPreview() {
+    IPProgressBar(progress = 0.25f)
 }

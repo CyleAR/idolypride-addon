@@ -29,7 +29,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GakuTabRow(
+fun IPTabRow(
     modifier: Modifier = Modifier,
     pagerState: PagerState,
     tabs: List<String>,
@@ -96,7 +96,7 @@ fun GakuTabRow(
 @OptIn(ExperimentalFoundationApi::class)
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
-fun GakuTabRowPreview(modifier: Modifier = Modifier) {
+fun IPTabRowPreview(modifier: Modifier = Modifier) {
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
-    GakuTabRow(modifier, pagerState, listOf("TAB 1", "TAB 2", "TAB 3")) { _ -> }
+    IPTabRow(modifier, pagerState, listOf("TAB 1", "TAB 2", "TAB 3")) { _ -> }
 }
