@@ -19,6 +19,7 @@
 std::unordered_set<void*> hookedStubs{};
 extern std::filesystem::path hoshimiLocalPath;
 
+
 #define DEFINE_HOOK(returnType, name, params)                                                      \
 	using name##_Type = returnType(*) params;                                                      \
 	name##_Type name##_Addr = nullptr;                                                             \
@@ -1136,7 +1137,7 @@ namespace HoshimiLocal::HookMain {
 
         if (isFirstPerson && obj) {
             if (obj == lastHidedObj) return;
-            if (lastHidedObj && IsNativeObjectAlive(lastHidedObj) && get_activeInHierarchy(lastHidedObj)) {
+            if (lastHidedObj && IsNativeObjectAlive(lastHidedObj)/*&& get_activeInHierarchy(lastHidedObj)*/) {
                 lastHidedObj->SetActive(true);
             }
             if (IsNativeObjectAlive(obj)) {
@@ -1198,13 +1199,10 @@ namespace HoshimiLocal::HookMain {
                     auto rootChild = rootModel->GetChild(i);
                     const auto childName = rootChild->GetName();
                     if (childName == "Root_Face") {
-                        for (int n = 0; n < rootChild->GetChildCount(); n++) {
-                            auto vLSkinningRenderer = rootChild->GetChild(n);
-                            if (vLSkinningRenderer->GetName() == "VLSkinningRenderer") {
-                                HideHead(vLSkinningRenderer->GetGameObject(), true);
-                                needRestoreHides = true;
-                            }
-                        }
+                        // 기존의 VLSkinningRenderer를 찾는 루프를 제거하고 
+                        // Root_Face 오브젝트 자체를 바로 HideHead에 넘깁니다.
+                        HideHead(rootChild->GetGameObject(), true);
+                        needRestoreHides = true;
                     }
                     else if (childName == "Root_Hair") {
                         HideHead(rootChild->GetGameObject(), false);

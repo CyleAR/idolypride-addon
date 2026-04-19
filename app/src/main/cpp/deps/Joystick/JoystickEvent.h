@@ -15,7 +15,7 @@ public:
               rightTrigger(rightTrigger), hatX(hatX), hatY(hatY) {
     }
 
-    // Getter ?�法
+    // Getter ?�法
     int getMessage() const {
         return message;
     }
