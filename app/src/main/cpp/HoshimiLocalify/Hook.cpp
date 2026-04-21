@@ -314,87 +314,158 @@ namespace HoshimiLocal::HookMain {
         }
     }
 
-    void* fontCache = nullptr;
-    void* GetReplaceFont() {
-        static auto fontName = Local::GetBasePath() / "local-files" / "gkamsZHFontMIX.otf";
-        if (!std::filesystem::exists(fontName)) {
-            return nullptr;
-        }
+    void* koPatchedFontAsset = nullptr;
+    bool fallbackRegistered = false;
+    void* solisFontAsset = nullptr;
+    void* sourceSansProAsset = nullptr;
 
-        static auto CreateFontFromPath = reinterpret_cast<void (*)(void* self, Il2cppString* path)>(
-                Il2cppUtils::il2cpp_resolve_icall("UnityEngine.Font::Internal_CreateFontFromPath(UnityEngine.Font,System.String)")
-        );
-        static auto Font_klass = Il2cppUtils::GetClass("UnityEngine.TextRenderingModule.dll",
-                                                       "UnityEngine", "Font");
-        static auto Font_ctor = Il2cppUtils::GetMethod("UnityEngine.TextRenderingModule.dll",
-                                                       "UnityEngine", "Font", ".ctor");
-        if (fontCache) {
-            if (IsNativeObjectAlive(fontCache)) {
-                return fontCache;
+    void ActivateKoreanFont() {
+        if (koPatchedFontAsset) return;
+        if (!sourceSansProAsset || !solisFontAsset) return;
+
+        static auto set_isMultiAtlasTexturesEnabled = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
+                                                                             "TMP_FontAsset", "set_isMultiAtlasTexturesEnabled");
+        static auto ClearFontAssetData = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
+                                                                "TMP_FontAsset", "ClearFontAssetData");
+        static auto TryAddCharacters = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
+                                                              "TMP_FontAsset", "TryAddCharacters",
+                                                              {"System.String", "System.Boolean"});
+
+        // Solis-MK5 SDF의 FaceInfo 메트릭(pointSize/scale 등)을 SourceSansPro에 복사
+        // → 한글 크기가 일본어와 동일해짐
+        static int faceInfoOffset = -1;
+        if (faceInfoOffset < 0) {
+            static auto klass = Il2cppUtils::GetClass("Unity.TextMeshPro.dll", "TMPro", "TMP_FontAsset");
+            if (klass) {
+                auto field = klass->Get<UnityResolve::Field>("m_FaceInfo");
+                if (field) faceInfoOffset = field->offset;
             }
         }
+        
+        if (faceInfoOffset > 0) {
+            // 문자열 ref 16바이트 건너뛰고 숫자 필드 68바이트만 복사
+            constexpr int strSize  = 16;
+            constexpr int numSize  = 68;
+            auto* src = (char*)solisFontAsset + faceInfoOffset + strSize;
+            auto* dst = (char*)sourceSansProAsset + faceInfoOffset + strSize;
+            std::memcpy(dst, src, numSize);
+            Log::InfoFmt("[Font] Matched Korean font size to Solis via FaceInfo memcpy");
+        }
 
-        const auto newFont = Font_klass->New<void*>();
-        Font_ctor->Invoke<void>(newFont);
+        if (set_isMultiAtlasTexturesEnabled)
+            set_isMultiAtlasTexturesEnabled->Invoke<void>(sourceSansProAsset, reinterpret_cast<void*>(1));
+        if (ClearFontAssetData)
+            ClearFontAssetData->Invoke<void>(sourceSansProAsset, reinterpret_cast<void*>(0));
+        
+        // if (TryAddCharacters) {
+        //     auto koStr = Il2cppString::New(
+        //         "가각간갈감갑강개객거건걸검겁게격견결겸경계고곡골공과관광괄교구국군굴궁권귀규균그극근글금급긍기긴길김깊까깨꺼께껴꼭꼬꽃꾸꿈끄끝나낙난날남납낭내냉너넓넘네녀년념녀노농높뇨누눈뉴느늘늠능니님다닥달담답당대댁더덕덜덤도독돈돌동두둘뒤드득들등디따때떠또뚜뜨띠라락란랄람랍랑래냉러럭련렬렴례로록론롤롬롭롯료루룡류륙률름릉리릭린림립마막만말맑맘망매맥맨맬맵머먹멀멈멍메멘면명모목몰몸못무묵문물미민믿밀바박반발밝밟밤방배백뱀버번벌범법베변별병보복본볼봄봐부북분불비빌빔빗빛빠빨뿐사삭산살삼상새색생서석선설성세소속손솔솜쇄수숙순술쉬스습시식신실심싶싸쓰아악안알암압앞야약양어얼엄없에여역연열염영예오옥온올옳와완왕외요욕용우운울움웃원위유육윤율으은을음응의이익인일임입자작잔잘잠장재쟁저적전절점정제조족존졸종좋주죽준줄중쥐즐증지직진질집짓짜쪽차착찬찰창채책처척천철청체초촉촌총추축춘출충취치침카칸칼캐코콩쿠타탁탄탈탕태터턱털통투특파팔패퍼편평폐포품표풍피필하학한할함합항해핵행향허헌험헤현호혹혼홀홈환활황회획효후훈휴흑흔흘흡흥희히"
+        //     );
+        //     TryAddCharacters->Invoke<bool>(sourceSansProAsset, koStr, reinterpret_cast<void*>(0));
+        // }
 
-        CreateFontFromPath(newFont, Il2cppString::New(fontName.string()));
-        fontCache = newFont;
-        return newFont;
+        koPatchedFontAsset = sourceSansProAsset;
+        fallbackRegistered = false;
+        Log::InfoFmt("[Font] Korean font activation complete (SourceSansPro-Regular SDF)");
+    }
+
+    void* GetKoreanFontAsset() {
+        if (koPatchedFontAsset && IsNativeObjectAlive(koPatchedFontAsset)) {
+            return koPatchedFontAsset;
+        }
+        // Awake 훅이 아직 발동 안 된 경우: 로그 스팩 방지
+        static bool warnedOnce = false;
+        if (!warnedOnce) {
+            warnedOnce = true;
+            Log::ErrorFmt("[Font] Korean font asset not ready (SourceSansPro-Regular SDF not loaded yet)");
+        }
+        return nullptr;
+    }
+
+    void RegisterKoreanFontFallback() {
+        if (fallbackRegistered) return;
+        auto koFont = GetKoreanFontAsset();
+        if (!koFont) return;
+
+        static auto get_fallbackFontAssets = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
+                                                                    "TMP_Settings", "get_fallbackFontAssets");
+        if (!get_fallbackFontAssets) {
+            Log::ErrorFmt("[Font] TMP_Settings.get_fallbackFontAssets not found!");
+            return;
+        }
+        auto fallbackList = get_fallbackFontAssets->Invoke<void*>(nullptr);
+        if (!fallbackList) {
+            Log::ErrorFmt("[Font] TMP_Settings fallbackFontAssets list is null!");
+            return;
+        }
+        static auto List_Add = Il2cppUtils::GetMethod("mscorlib.dll", "System.Collections.Generic",
+                                                      "List`1", "Add");
+        if (List_Add) {
+            List_Add->Invoke<void>(fallbackList, koFont);
+            fallbackRegistered = true;
+            Log::InfoFmt("[Font] Korean font registered in TMP_Settings.fallbackFontAssets!");
+        }
     }
 
     std::unordered_set<void*> updatedFontPtrs{};
     void UpdateFont(void* TMP_Textself) {
         if (!Config::replaceFont) return;
+
+        // 전역 폴백 등록 (koPatchedFontAsset 이 준비됐을 때만 실행)
+        RegisterKoreanFontFallback();
+
         static auto get_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
                                                       "TMPro", "TMP_Text", "get_font");
-        static auto set_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
-                                                      "TMPro", "TMP_Text", "set_font");
         static auto get_name = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll",
                                                       "UnityEngine", "Object", "get_name");
-//        static auto set_fontMaterial = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
-//                                                      "TMPro", "TMP_Text", "set_fontMaterial");
-//        static auto ForceMeshUpdate = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
-//                                                      "TMPro", "TMP_Text", "ForceMeshUpdate");
-//
-//        static auto get_material = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
-//                                                      "TMPro", "TMP_Asset", "get_material");
-
-        static auto set_sourceFontFile = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
-                                                                "TMP_FontAsset", "set_sourceFontFile");
-        static auto UpdateFontAssetData = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
-                                                                 "TMP_FontAsset", "UpdateFontAssetData");
+        static auto get_fallbackFontAssetTable = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
+                                                                        "TMP_FontAsset", "get_fallbackFontAssetTable");
+        static auto set_fallbackFontAssetTable = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
+                                                                        "TMP_FontAsset", "set_fallbackFontAssetTable");
 
         auto fontAsset = get_font->Invoke<void*>(TMP_Textself);
-        if (!fontAsset) {
-            return;
-        }
+        if (!fontAsset) return;
 
-        // 检查字体名称，跳过 CampusAlphanumeric 系列字体
+        // CampusAlphanumeric 계열은 건너뜀
         auto fontAssetName = get_name->Invoke<Il2cppString*>(fontAsset);
         if (fontAssetName) {
             std::string fontName = fontAssetName->ToString();
-            std::transform(fontName.begin(), fontName.end(), fontName.begin(), 
+            std::transform(fontName.begin(), fontName.end(), fontName.begin(),
                 [](unsigned char c) { return std::tolower(c); });
             if (fontName.find("campusalphanumeric") != std::string::npos) {
-                return;  // 保持原版数字字体
+                return;
             }
         }
 
-        auto newFont = GetReplaceFont();
-        if (!newFont) return;
-
-        set_sourceFontFile->Invoke<void>(fontAsset, newFont);
-        if (!updatedFontPtrs.contains(fontAsset)) {
-            updatedFontPtrs.emplace(fontAsset);
-            UpdateFontAssetData->Invoke<void>(fontAsset);
-        }
+        if (updatedFontPtrs.contains(fontAsset)) return;
         if (updatedFontPtrs.size() > 200) updatedFontPtrs.clear();
-        
-        set_font->Invoke<void>(TMP_Textself, fontAsset);
 
-//        auto fontMaterial = get_material->Invoke<void*>(fontAsset);
-//        set_fontMaterial->Invoke<void>(TMP_Textself, fontMaterial);
-//        ForceMeshUpdate->Invoke<void>(TMP_Textself, false, false);
+        auto koFont = GetKoreanFontAsset();
+        if (!koFont) return;
+        if (fontAsset == koFont) return;
+
+        if (get_fallbackFontAssetTable && set_fallbackFontAssetTable) {
+            auto fallbackTable = get_fallbackFontAssetTable->Invoke<void*>(fontAsset);
+            if (!fallbackTable) {
+                static auto List_klass = Il2cppUtils::GetClass("mscorlib.dll",
+                                                               "System.Collections.Generic", "List`1");
+                static auto List_ctor = Il2cppUtils::GetMethod("mscorlib.dll",
+                                                               "System.Collections.Generic", "List`1", ".ctor");
+                if (List_klass && List_ctor) {
+                    fallbackTable = List_klass->New<void*>();
+                    List_ctor->Invoke<void>(fallbackTable);
+                    set_fallbackFontAssetTable->Invoke<void>(fontAsset, fallbackTable);
+                }
+            }
+            if (fallbackTable) {
+                static auto List_Add = Il2cppUtils::GetMethod("mscorlib.dll",
+                                                              "System.Collections.Generic", "List`1", "Add");
+                if (List_Add) {
+                    List_Add->Invoke<void>(fallbackTable, koFont);
+                    updatedFontPtrs.emplace(fontAsset);
+                }
+            }
+        }
     }
 
     DEFINE_HOOK(void, TMP_Text_PopulateTextBackingArray, (void* self, UnityResolve::UnityType::String* text, int start, int length)) {
@@ -506,6 +577,32 @@ namespace HoshimiLocal::HookMain {
         // set_font->Invoke<void>(self, font);
         UpdateFont(self);
         TextMeshProUGUI_Awake_Orig(self, method);
+    }
+
+    // TMP_FontAsset.Awake: UABEA로 교체한 'SourceSansPro-Regular' 에셋 캡처
+    DEFINE_HOOK(void, TMP_FontAsset_Awake, (void* self)) {
+        TMP_FontAsset_Awake_Orig(self);
+
+        if (!Config::replaceFont) return;
+
+        static auto get_name = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll",
+                                                      "UnityEngine", "Object", "get_name");
+        static auto get_sourceFontFile = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
+                                                                "TMP_FontAsset", "get_sourceFontFile");
+        auto nameStr = get_name->Invoke<Il2cppString*>(self);
+        if (!nameStr) return;
+
+        const std::string name = nameStr->ToString();
+        Log::InfoFmt("[Font] TMP_FontAsset loaded: %s", name.c_str());
+
+        if (name == "SourceSansPro-Regular SDF") {
+            sourceSansProAsset = self;
+            ActivateKoreanFont();
+        } else if (name == "Solis-MK5 SDF" && !solisFontAsset) {
+            solisFontAsset = self;
+            Log::InfoFmt("[Font] Captured Solis-MK5 SDF as FaceInfo base");
+            ActivateKoreanFont();
+        }
     }
 
     // Legacy UnityEngine.UI.Text hook（礼物/邮件等非TMP界面）
@@ -1480,6 +1577,10 @@ namespace HoshimiLocal::HookMain {
 
         ADD_HOOK(TextMeshProUGUI_Awake, Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
                                                                       "TextMeshProUGUI", "Awake"));
+
+        // TMP_FontAsset.Awake 훅: SourceSansPro-Regular (UABEA 교체본) 로드 시점 캡처
+        ADD_HOOK(TMP_FontAsset_Awake, Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
+                                                                    "TMP_FontAsset", "Awake"));
 
         ADD_HOOK(TMP_Text_set_text, Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
                                                                   "TMP_Text", "set_text"));
