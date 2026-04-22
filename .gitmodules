@@ -1,3 +1,6 @@
 [submodule "app/src/main/assets/idolypride-local"]
 	path = app/src/main/assets/idolypride-local
 	url = https://github.com/cylear/IdolyprideTranslationData.git
+[submodule "app/src/main/assets/hoshimi-local"]
+	path = app/src/main/assets/hoshimi-local
+	url = https://github.com/CyleAR/IdolyprideTranslationDataKor.git
