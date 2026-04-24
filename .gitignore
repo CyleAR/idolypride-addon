@@ -22,3 +22,5 @@ local.properties
 /platform-tools
 skills.md
 dump
+debug_log.txt
+build_*.txt
