@@ -757,10 +757,15 @@ namespace HoshimiLocal::HookMain {
         texture2d_ctor->Invoke<void>(tex, 2, 2);
 
         static auto image_conversion_class = Il2cppUtils::GetClass("UnityEngine.ImageConversionModule.dll", "UnityEngine", "ImageConversion");
-        static auto load_image = image_conversion_class ? image_conversion_class->Get<UnityResolve::Method>("LoadImage", {"UnityEngine.Texture2D", "System.Byte[]"}) : nullptr;
+        static auto load_image_ptr = reinterpret_cast<bool (*)(void*, void*, bool, void*)>(Il2cppUtils::GetMethodPointer("UnityEngine.ImageConversionModule.dll", "UnityEngine", "ImageConversion", "LoadImage", {"UnityEngine.Texture2D", "System.Byte[]", "System.Boolean"}));
 
-        if (load_image) {
-            load_image->Invoke<bool>(nullptr, tex, il2cpp_bytes);
+        if (load_image_ptr) {
+            load_image_ptr(tex, il2cpp_bytes, false, nullptr);
+        } else {
+            static auto load_image = image_conversion_class ? image_conversion_class->Get<UnityResolve::Method>("LoadImage", {"UnityEngine.Texture2D", "System.Byte[]"}) : nullptr;
+            if (load_image) {
+                load_image->Invoke<bool>(nullptr, tex, il2cpp_bytes);
+            }
         }
 
         static auto sprite_klass = Il2cppUtils::GetClass("UnityEngine.CoreModule.dll", "UnityEngine", "Sprite");
@@ -830,7 +835,7 @@ namespace HoshimiLocal::HookMain {
         if (value) {
             std::string name = GetObjectName(value);
             if (!name.empty()) {
-                // Log::DebugFmt("RawImage_set_texture: %s", name.c_str());
+                //Log::DebugFmt("RawImage_set_texture: %s", name.c_str());
                 if (texture_cache.contains(name)) {
                     return RawImage_set_texture_Orig(self, texture_cache[name], method);
                 }
@@ -841,15 +846,37 @@ namespace HoshimiLocal::HookMain {
                     static auto texture2d_ctor = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine", "Texture2D", ".ctor", {"System.Int32", "System.Int32"});
                     static auto byte_klass = Il2cppUtils::GetClass("mscorlib.dll", "System", "Byte");
                     static auto image_conversion_class = Il2cppUtils::GetClass("UnityEngine.ImageConversionModule.dll", "UnityEngine", "ImageConversion");
-                    static auto load_image = image_conversion_class ? image_conversion_class->Get<UnityResolve::Method>("LoadImage", {"UnityEngine.Texture2D", "System.Byte[]"}) : nullptr;
+                    
+                    static auto load_image_3 = image_conversion_class ? image_conversion_class->Get<UnityResolve::Method>("LoadImage", {"UnityEngine.Texture2D", "System.Byte[]", "System.Boolean"}) : nullptr;
+                    static auto load_image_2 = image_conversion_class ? image_conversion_class->Get<UnityResolve::Method>("LoadImage", {"UnityEngine.Texture2D", "System.Byte[]"}) : nullptr;
 
                     auto il2cpp_bytes = UnityResolve::UnityType::Array<uint8_t>::New(byte_klass, bytes.size());
                     std::memcpy(reinterpret_cast<void*>(il2cpp_bytes->GetData()), bytes.data(), bytes.size());
 
                     auto tex = texture2d_klass->New<void*>();
-                    texture2d_ctor->Invoke<void>(tex, 2, 2);
+                    // Texture2D(int width, int height, TextureFormat format, bool mipChain)
+                    // RGBA32 = 4
+                    static auto texture2d_ctor_full = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine", "Texture2D", ".ctor", {"System.Int32", "System.Int32", "UnityEngine.TextureFormat", "System.Boolean"});
+                    if (texture2d_ctor_full) {
+                        texture2d_ctor_full->Invoke<void>(tex, 2, 2, 4, false);
+                    } else {
+                        texture2d_ctor->Invoke<void>(tex, 2, 2);
+                    }
 
-                    if (load_image && load_image->Invoke<bool>(nullptr, tex, il2cpp_bytes)) {
+                    bool success = false;
+                    static auto load_image_ptr = reinterpret_cast<bool (*)(void*, void*, bool, void*)>(Il2cppUtils::GetMethodPointer("UnityEngine.ImageConversionModule.dll", "UnityEngine", "ImageConversion", "LoadImage", {"UnityEngine.Texture2D", "System.Byte[]", "System.Boolean"}));
+                    
+                    if (load_image_ptr) {
+                        success = load_image_ptr(tex, il2cpp_bytes, false, nullptr);
+                    } else if (load_image_3) {
+                        success = load_image_3->Invoke<bool>(nullptr, tex, il2cpp_bytes, false);
+                    } 
+                    
+                    if (!success && load_image_2) {
+                        success = load_image_2->Invoke<bool>(nullptr, tex, il2cpp_bytes);
+                    }
+
+                    if (success) {
                         texture_cache[name] = tex;
                         Log::InfoFmt("Replaced Texture: %s", name.c_str());
                         return RawImage_set_texture_Orig(self, tex, method);
@@ -890,45 +917,6 @@ namespace HoshimiLocal::HookMain {
         }
 
         return OctoResourceLoader_LoadFromCacheOrDownload_Orig(self, resourceName, onComplete, onProgress, method);
-    }
-
-    DEFINE_HOOK(void, OctoResourceLoader_LoadFromCacheOrDownload_Texture2D,
-                (void* self, Il2cppString* resourceName, void* onComplete, void* onProgress, void* method)) {
-
-        HoshimiLocal::Log::DebugFmt("OctoResourceLoader_LoadFromCacheOrDownload_Texture2D: %s\n", resourceName->ToString().c_str());
-
-        std::vector<uint8_t> replaceBytes;
-        if (Local::GetResourceBytes(resourceName->ToString(), &replaceBytes)) {
-            static auto byte_klass = Il2cppUtils::GetClass("mscorlib.dll", "System", "Byte");
-            auto il2cpp_bytes = UnityResolve::UnityType::Array<uint8_t>::New(byte_klass, replaceBytes.size());
-            std::memcpy(reinterpret_cast<void*>(il2cpp_bytes->GetData()), replaceBytes.data(), replaceBytes.size());
-
-            static auto texture2d_klass = Il2cppUtils::GetClass("UnityEngine.CoreModule.dll", "UnityEngine", "Texture2D");
-            static auto texture2d_ctor = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine", "Texture2D", ".ctor", {"System.Int32", "System.Int32"});
-            
-            auto tex = texture2d_klass->New<void*>();
-            texture2d_ctor->Invoke<void>(tex, 2, 2);
-
-            static auto image_conversion_class = Il2cppUtils::GetClass("UnityEngine.ImageConversionModule.dll", "UnityEngine", "ImageConversion");
-            static auto load_image = image_conversion_class ? image_conversion_class->Get<UnityResolve::Method>("LoadImage", {"UnityEngine.Texture2D", "System.Byte[]"}) : nullptr;
-            
-            if (load_image) {
-                load_image->Invoke<bool>(nullptr, tex, il2cpp_bytes);
-            }
-
-            const auto onComplete_klass = Il2cppUtils::get_class_from_instance(onComplete);
-            const auto onComplete_invoke_mtd = UnityResolve::Invoke<Il2cppUtils::MethodInfo*>(
-                    "il2cpp_class_get_method_from_name", onComplete_klass, "Invoke", 2);
-            if (onComplete_invoke_mtd) {
-                const auto onComplete_invoke = reinterpret_cast<void (*)(void*, void*, void*)>(
-                        onComplete_invoke_mtd->methodPointer
-                );
-                onComplete_invoke(onComplete, tex, nullptr);
-                return;
-            }
-        }
-
-        return OctoResourceLoader_LoadFromCacheOrDownload_Texture2D_Orig(self, resourceName, onComplete, onProgress, method);
     }
 
     DEFINE_HOOK(void, OnDownloadProgress_Invoke, (void* self, Il2cppString* name, uint64_t receivedLength, uint64_t contentLength)) {
@@ -1830,10 +1818,6 @@ namespace HoshimiLocal::HookMain {
                                                "OctoResourceLoader", "LoadFromCacheOrDownload",
                                                {"System.String", "System.Action<System.String,Octo.LoadError>", "Octo.OnDownloadProgress"}));
 
-        ADD_HOOK(OctoResourceLoader_LoadFromCacheOrDownload_Texture2D,
-                 Il2cppUtils::GetMethodPointer("Octo.dll", "Octo.Loader",
-                                               "OctoResourceLoader", "LoadFromCacheOrDownload",
-                                               {"System.String", "System.Action<UnityEngine.Texture2D,Octo.LoadError>", "Octo.OnDownloadProgress"}));
 
         ADD_HOOK(Image_set_sprite,
                  Il2cppUtils::GetMethodPointer("UnityEngine.UI.dll", "UnityEngine.UI",

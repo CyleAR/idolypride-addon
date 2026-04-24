@@ -474,6 +474,7 @@ namespace HoshimiLocal::Local {
         try {
             const auto targetFilePath = basePath / "local-files" / "resource" / "img" / name;
             if (exists(targetFilePath)) {
+                // Log::DebugFmt("GetResourceBytes: File found! %s", targetFilePath.string().c_str());
                 std::ifstream file(targetFilePath.string(), std::ios::binary);
                 if (!file.is_open()) return false;
                 
