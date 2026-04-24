@@ -14,6 +14,7 @@ namespace HoshimiLocal::Local {
     void DumpI18nItem(const std::string& key, const std::string& value);
 
     bool GetResourceText(const std::string& name, std::string* ret);
+    bool GetResourceBytes(const std::string& name, std::vector<uint8_t>* ret);
     bool GetGenericText(const std::string& origText, std::string* newStr);
 
     std::string OnKeyDown(int message, int key);

@@ -468,6 +468,31 @@ namespace HoshimiLocal::Local {
         return false;
     }
 
+    bool GetResourceBytes(const std::string& name, std::vector<uint8_t>* ret) {
+        static std::filesystem::path basePath = GetBasePath();
+
+        try {
+            const auto targetFilePath = basePath / "local-files" / "resource" / "img" / name;
+            if (exists(targetFilePath)) {
+                std::ifstream file(targetFilePath.string(), std::ios::binary);
+                if (!file.is_open()) return false;
+                
+                file.seekg(0, std::ios::end);
+                size_t fileSize = file.tellg();
+                file.seekg(0, std::ios::beg);
+                
+                ret->resize(fileSize);
+                file.read(reinterpret_cast<char*>(ret->data()), fileSize);
+                file.close();
+                return true;
+            }
+        }
+        catch (std::exception& e) {
+            Log::ErrorFmt("read image file: %s failed.", name.c_str());
+        }
+        return false;
+    }
+
     std::string GetDumpGenericFileName(DumpStrStat stat = DumpStrStat::DEFAULT) {
         if (stat == DumpStrStat::SPLITTABLE_ORIG) {
             if (genericDumpFileIndex == 0) return "generic_orig.json";
