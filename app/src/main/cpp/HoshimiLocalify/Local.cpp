@@ -449,11 +449,12 @@ namespace HoshimiLocal::Local {
         return content;
     }
 
+    //adv 파일 읽어서 한글패치
     bool GetResourceText(const std::string& name, std::string* ret) {
         static std::filesystem::path basePath = GetBasePath();
 
         try {
-            const auto targetFilePath = basePath / "local-files" / "resource" / name;
+            const auto targetFilePath = basePath / "local-files" / "resource" / "adv" / name;
             // Log::DebugFmt("GetResourceText: %s", targetFilePath.c_str());
             if (exists(targetFilePath)) {
                 auto readStr = readFileToString(targetFilePath.string());
