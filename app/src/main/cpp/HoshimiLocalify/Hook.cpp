@@ -896,7 +896,9 @@ namespace HoshimiLocal::HookMain {
         if (!Config::displayUserName.empty()) {
             userName = Il2cppString::New(Config::displayUserName);
         }
-        return MessageDetail_GetNotificationText_Orig(self, userName, mtd);
+        auto notificationText = MessageDetail_GetNotificationText_Orig(self, userName, mtd);
+        if (!notificationText) return nullptr;
+        return Il2cppString::New(ResolveJosa(notificationText->ToString()));
     }
 
     std::unordered_set<void*> updatedFontPtrs{};
