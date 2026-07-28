@@ -840,8 +840,9 @@ namespace HoshimiLocal::HookMain {
             else if (tag == "[이/가]") replaceWith = hasBatchim ? "\xEC\x9D\xB4" : "\xEA\xB0\x80"; // 이 : 가
             else if (tag == "[이/랑]" || tag == "[이랑/랑]") replaceWith = hasBatchim ? "\xEC\x9D\xB4\xEB\x9E\x91" : "\xEB\x9E\x91"; // 이랑 : 랑
             else if (tag == "[이/라]" || tag == "[이라/라]") replaceWith = hasBatchim ? "\xEC\x9D\xB4\xEB\x9D\xBC" : "\xEB\x9D\xBC"; // 이라 : 라
+            else if (tag == "[이/다]" || tag == "[이다/다]") replaceWith = hasBatchim ? "\xEC\x9D\xB4\xEB\x8B\xA4" : "\xEB\x8B\xA4"; // 이다 : 다
+            else if (tag == "[와/과]" || tag == "[과/와]") replaceWith = hasBatchim ? "\xEA\xB3\xBC" : "\xEC\x99\x80"; // 과 : 와
             else if (tag == "[을/를]") replaceWith = hasBatchim ? "\xEC\x9D\x84" : "\xEB\xA5\xBC"; // 을 : 를
-            else if (tag == "[와/과]") replaceWith = hasBatchim ? "\xEA\xB3\xBC" : "\xEC\x99\x80"; // 과 : 와
             else if (tag == "[아/야]") replaceWith = hasBatchim ? "\xEC\x95\x84" : "\xEC\x95\xBC"; // 아 : 야
             else if (tag == "[으/로]" || tag == "[으로/로]") {
                 // ㄹ 받침(8)인 경우 '로' 선택
