@@ -863,16 +863,24 @@ namespace HoshimiLocal::HookMain {
     std::string FixLigature(std::string text) {
         if (text.empty()) return text;
         size_t pos = 0;
-        // 1. 스토리창 범인: U+2E3A (Two-Em Dash, \xE2\xB8\xBA) 를 Em Dash(—) 하나로 치환
+        
+        // 쉼표가 인게임에서 잘 보이는 하단작은따옴표로 치환해서 보여주게
+        while ((pos = text.find(",", pos)) != std::string::npos) {
+            text.replace(pos, 1, "\xE2\x80\x9A");
+            pos += 3;
+        }
+        pos = 0;
+
+        // 스토리창 범인: U+2E3A (Two-Em Dash, \xE2\xB8\xBA) 를 Em Dash(—) 하나로 치환
         while ((pos = text.find("\xE2\xB8\xBA", pos)) != std::string::npos) {
             text.replace(pos, 3, "\xE2\x80\x94");
             pos += 3;
         }
 
-        // 2. 사용자 닉네임을 먼저 치환해 받침 기준으로 조사를 선택
+        // 사용자 닉네임을 먼저 치환해 받침 기준으로 조사를 선택
         text = Config::ReplaceDisplayUserName(std::move(text));
 
-        // 3. 한국어 조사 처리 추가
+        // 한국어 조사 처리 추가
         text = ResolveJosa(text);
 
         return text;
