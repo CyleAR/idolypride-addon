@@ -865,9 +865,21 @@ namespace HoshimiLocal::HookMain {
         size_t pos = 0;
         
         // 쉼표가 인게임에서 잘 보이는 하단작은따옴표로 치환해서 보여주게
-        while ((pos = text.find(",", pos)) != std::string::npos) {
-            text.replace(pos, 1, "\xE2\x80\x9A");
-            pos += 3;
+        // 단, 텍스트가 숫자로만 이루어져 있는 경우는 제외
+        bool isOnlyNumbers = true;
+        for (char c : text) {
+            if (!(c >= '0' && c <= '9') && 
+                c != ',' && c != '.' && c != ' ' && c != '+' && c != '-' && c != '%' && c != 'x' && c != 'X' && c != '/') {
+                isOnlyNumbers = false;
+                break;
+            }
+        }
+
+        if (!isOnlyNumbers) {
+            while ((pos = text.find(",", pos)) != std::string::npos) {
+                text.replace(pos, 1, "\xE2\x80\x9A");
+                pos += 3;
+            }
         }
         pos = 0;
 
