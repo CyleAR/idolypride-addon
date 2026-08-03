@@ -141,6 +141,36 @@ namespace HoshimiLocal::Local {
         }
     }
 
+    bool IsGenericFmtKey(const std::string& key) {
+        size_t searchPos = 0;
+        while ((searchPos = key.find('{', searchPos)) != std::string::npos) {
+            size_t indexPos = searchPos + 1;
+            if (indexPos >= key.size() || key[indexPos] < '0' || key[indexPos] > '9') {
+                searchPos++;
+                continue;
+            }
+            while (indexPos < key.size() && key[indexPos] >= '0' && key[indexPos] <= '9') {
+                indexPos++;
+            }
+            if (indexPos < key.size() && key[indexPos] == '}') return true;
+            searchPos++;
+        }
+        return false;
+    }
+
+    void LoadGenericJsonData(const std::filesystem::path& filePath, const bool needCheckSplitPrefix = false) {
+        std::unordered_map<std::string, std::string> loadedData;
+        LoadJsonDataToMap(filePath, loadedData, true, true, needCheckSplitPrefix);
+        for (auto& [key, value] : loadedData) {
+            if (IsGenericFmtKey(key)) {
+                genericFmtText[key] = std::move(value);
+            }
+            else {
+                genericText[key] = std::move(value);
+            }
+        }
+    }
+
     void DumpMapDataToJson(const std::filesystem::path& dumpBasePath, const std::filesystem::path& fileName,
                            const std::unordered_map<std::string, std::string>& dict) {
         const auto dumpFilePath = dumpBasePath / fileName;
@@ -401,10 +431,11 @@ namespace HoshimiLocal::Local {
         LoadJsonDataToMap(localizationFile, i18nData, true);
         Log::InfoFmt("%ld localization items loaded.", i18nData.size());
 
-        LoadJsonDataToMap(genericFile, genericText, true, true, true);
+        genericText.clear();
         genericSplitText.clear();
         genericFmtText.clear();
         LoadJsonDataToMap(genericSplitFile, genericSplitText, true, true, true);
+        LoadGenericJsonData(genericFile, true);
         if (std::filesystem::exists(genericDir) || std::filesystem::is_directory(genericDir)) {
             for (const auto& entry : std::filesystem::recursive_directory_iterator(genericDir)) {
                 if (std::filesystem::is_regular_file(entry.path())) {
@@ -414,18 +445,14 @@ namespace HoshimiLocal::Local {
                             // Split files are also loaded into genericText below for direct-match fallback.
                             LoadJsonDataToMap(currFile, genericSplitText, true, false, true);
                         }
-                        if (currFile.filename().string().ends_with(".fmt.json")) {  // fmt text file
-                            LoadJsonDataToMap(currFile, genericFmtText, true, false, false);
-                        }
-                        else {
-                            LoadJsonDataToMap(currFile, genericText, true, false, true);
-                        }
+                        LoadGenericJsonData(currFile, true);
                     }
                 }
             }
         }
         ProcessGenericTextLabels();
         Log::InfoFmt("%ld generic text items loaded.", genericText.size());
+        Log::InfoFmt("%ld generic format text items loaded.", genericFmtText.size());
     }
 
     bool GetI18n(const std::string& key, std::string* ret) {
