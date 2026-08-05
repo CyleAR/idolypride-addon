@@ -289,7 +289,7 @@ namespace Il2cppUtils {
 
             while ((field = UnityResolve::Invoke<Il2cppUtils::FieldInfo*>("il2cpp_class_get_fields", enumClass, &iter))) {
                 // Log::DebugFmt("field: %s, off: %d", field->name, field->offset);
-                if (field->offset > 0) continue;  // 非 static
+                if (field->offset > 0) continue;  // Non-static
                 if (strcmp(field->name, "value__") == 0) {
                     continue;
                 }

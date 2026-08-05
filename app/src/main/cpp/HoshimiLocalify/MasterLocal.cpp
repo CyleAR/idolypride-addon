@@ -390,7 +390,7 @@ namespace HoshimiLocal::MasterLocal {
             if (!primaryKeys.is_array()) return false;
             if (!transData.is_array()) return false;
 
-            // 首先构造 mainPrimaryKey 规则
+            // Build mainPrimaryKey rules first
             for (auto& pkItem : primaryKeys) {
                 if (!pkItem.is_string()) {
                     return false;
@@ -457,7 +457,7 @@ namespace HoshimiLocal::MasterLocal {
         }
 
         bool BuildUniqueKeyValue(nlohmann::json& data, TableLocalData& tableLocalData) {
-            // 首先处理 main 部分
+            // Process main part first
             const std::string mainBaseUniqueKey = BuildBaseMainUniqueKey(data, tableLocalData);  // p_card-00-acc-0_002|0|
             if (mainBaseUniqueKey.empty()) return false;
             for (auto& mainLocalKey : tableLocalData.itemRule.mainLocalKey) {
@@ -471,7 +471,7 @@ namespace HoshimiLocal::MasterLocal {
                     tableLocalData.transData.emplace(currUniqueKey, currLocalValue);
                 }
             }
-            // 然后处理 sub 部分
+            // Then process sub part
             /*
             for (const auto& [subPrimaryParentKey, subPrimarySubKeys] : tableLocalData.itemRule.subPrimaryKey) {
                 if (!data.contains(subPrimaryParentKey)) continue;
@@ -509,7 +509,7 @@ namespace HoshimiLocal::MasterLocal {
                 const std::string subBaseUniqueKey = mainBaseUniqueKey + subLocalParentKey + '|';  // p_card-00-acc-0_002|0|produceDescriptions|
                 auto subValueType = checkJsonValueType(data[subLocalParentKey]);
                 if (subValueType != JsonValueType::JVT_NeedMore_EmptyArray) {
-                    tableLocalData.mainKeyType.emplace(subLocalParentKey, subValueType);  // 在这里插入 subParent 的类型
+                    tableLocalData.mainKeyType.emplace(subLocalParentKey, subValueType);  // Insert subParent type here
                 }
                 switch (subValueType) {
                     case JsonValueType::JVT_Object: {
@@ -585,7 +585,7 @@ namespace HoshimiLocal::MasterLocal {
         bool GetTableLocalData(nlohmann::json& fullData, TableLocalData& tableLocalData) {
             bool isFailed = false;
 
-            // 首先 Build mainKeyType 和 subKeyType
+            // Build mainKeyType and subKeyType first
             for (auto& data : fullData["data"]) {
                 if (!data.is_object()) continue;
 
@@ -613,7 +613,7 @@ namespace HoshimiLocal::MasterLocal {
             if (isFailed) return false;
 
             bool hasSuccess = false;
-            // 然后构造 transData
+            // Then construct transData
             for (auto& data : fullData["data"]) {
                 if (!data.is_object()) continue;
                 if (BuildUniqueKeyValue(data, tableLocalData)) {

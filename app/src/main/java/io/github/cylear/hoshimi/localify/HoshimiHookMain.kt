@@ -101,25 +101,25 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     val motionEvent = param.args[0] as MotionEvent
                     val action = motionEvent.action
 
-                    // 左摇杆的X和Y轴
+                    // Left stick X and Y axis
                     val leftStickX = motionEvent.getAxisValue(MotionEvent.AXIS_X)
                     val leftStickY = motionEvent.getAxisValue(MotionEvent.AXIS_Y)
 
-                    // 右摇杆的X和Y轴
+                    // Right stick X and Y axis
                     val rightStickX = motionEvent.getAxisValue(MotionEvent.AXIS_Z)
                     val rightStickY = motionEvent.getAxisValue(MotionEvent.AXIS_RZ)
 
-                    // 左扳机
+                    // Left trigger
                     val leftTrigger = motionEvent.getAxisValue(MotionEvent.AXIS_LTRIGGER)
 
-                    // 右扳机
+                    // Right trigger
                     val rightTrigger = motionEvent.getAxisValue(MotionEvent.AXIS_RTRIGGER)
 
-                    // 十字键
+                    // D-Pad
                     val hatX = motionEvent.getAxisValue(MotionEvent.AXIS_HAT_X)
                     val hatY = motionEvent.getAxisValue(MotionEvent.AXIS_HAT_Y)
 
-                    // 处理摇杆和扳机事件
+                    // Handle stick and trigger events
                     joystickEvent(
                         action,
                         leftStickX,
@@ -270,22 +270,22 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 null
             }
 
-            // 清理本地文件
+            // Clean up local files
             if (programConfig?.cleanLocalAssets == true) {
                 FilesChecker.cleanAssets()
             }
 
-            // 检查 files 版本和 assets 版本并更新
+            // Check files version and assets version and update
             if (programConfig?.useBuiltInAssets == true) {
                 FilesChecker.initAndCheck(activity.filesDir, modulePath)
             }
 
-            // 强制导出 assets 文件
+            // Force export assets files
             if (initConfig?.forceExportResource == true) {
                 FilesChecker.updateFiles()
             }
 
-            // 使用热更新文件
+            // Use hot update file
             if (programConfig?.useAPIAssets == true) {
                 // val dataUri = intent.data
                 val dataUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -306,7 +306,7 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 else if (programConfig.useAPIAssets) {
                     if (!File(activity.filesDir, localizationFilesDir).exists() &&
                         (initConfig?.forceExportResource == false)) {
-                        // 使用 API 资源，不检查内置，API 资源无效，且游戏内没有插件数据时，释放内置数据
+                        // Use API resources without checking built-in; if API resources are invalid and no plugin data in game, release built-in data
                         FilesChecker.initAndCheck(activity.filesDir, modulePath)
                     }
                 }
@@ -349,7 +349,12 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 val latestVersion = release.tag_name.trim()
                 Log.i(TAG, "Translation update check: installed=$installedVersion latest=$latestVersion")
                 if (latestVersion.isNotEmpty() && latestVersion != installedVersion) {
-                    showToast("신규 번역 데이터가 있습니다. 한패 앱에서 'API를 통해 리소스 업데이트'를 체크해 업데이트해 주세요.")
+                    val msg = when (getCurrentLanguage(activity)) {
+                        "zh" -> "检测到新翻译。请在翻译 APP 中执行 API 更新。"
+                        "en" -> "New translation found. Please run API update in the translation app."
+                        else -> "신규 번역이 있습니다. 한패 앱에서 API 업데이트를 실행해 주세요."
+                    }
+                    showToast(msg)
                 }
             }
         )
@@ -438,6 +443,18 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
 
     fun showGetConfigFailed(activity: Context) {
         val langData = when (getCurrentLanguage(activity)) {
+            "ko" -> {
+                mapOf(
+                    "title" to "설정을 읽을 수 없습니다",
+                    "message" to "설정 로드에 실패하여 기본 설정이 사용됩니다.\n" +
+                            "LSPatch와 같은 도구의 통합 모드를 사용했거나 권한 부여를 거부했을 수 있습니다.\n" +
+                            "LSPatch와 같은 도구의 통합 모드를 사용했고 별도의 플러그인을 설치하지 않았다면 플러그인을 다운로드하세요.\n" +
+                            "플러그인 본체를 설치했는데도 이 오류가 표시되면 다른 앱을 실행할 권한을 허용하세요.",
+                    "infoButton" to "정보",
+                    "dlButton" to "다운로드",
+                    "okButton" to "확인"
+                )
+            }
             "zh" -> {
                 mapOf(
                     "title" to "无法读取设置",
@@ -511,7 +528,7 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         @JvmStatic
         external fun loadConfig(configJsonStr: String)
 
-        // Toast快速切换内容
+        // Toast fast switch content
         private var toast: Toast? = null
 
         @JvmStatic
@@ -521,11 +538,11 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             if (context != null) {
                 val handler = Handler(Looper.getMainLooper())
                 handler.post {
-                    // 取消之前的 Toast
+                    // Cancel previous Toast
                     toast?.cancel()
-                    // 创建新的 Toast
+                    // Create new Toast
                     toast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
-                    // 展示新的 Toast
+                    // Show new Toast
                     toast?.show()
                 }
             }

@@ -126,7 +126,7 @@ fun <T> T.onClickStartGame() where T : Activity, T : IHasConfigItems {
     val version = packInfo.versionName
     val versionCode = packInfo.longVersionCode
     val currentPluginVersion = "$version ($versionCode)"
-    if (lastStartPluginVersion != currentPluginVersion) {  // 插件版本更新，强制启用资源更新检查
+    if (lastStartPluginVersion != currentPluginVersion) {  // Plugin version updated, force check resource updates
         lastStartPluginVersionFile.writeText(currentPluginVersion)
         programConfig.useBuiltInAssets = true
         
@@ -147,7 +147,7 @@ fun <T> T.onClickStartGame() where T : Activity, T : IHasConfigItems {
         putExtra("iprData", getConfigContent())
         putExtra(
             "localData",
-            getProgramConfigContent(listOf("useAPIAssetsURL", "localAPIAssetsVersion",
+            getProgramConfigContent(listOf("localAPIAssetsVersion",
                 "currentResourceVersion", "p"), programConfig)
         )
         putExtra("lVerName", version)

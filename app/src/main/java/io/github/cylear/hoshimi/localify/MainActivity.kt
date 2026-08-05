@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
     override fun saveConfig() {
         try {
             config.pf = false
-            viewModel.configState.value = config.copy( pf = true )  // 更新 UI
+            viewModel.configState.value = config.copy( pf = true )  // Update UI
         }
         catch (e: RuntimeException) {
             Log.d(TAG, e.toString())
@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableAct
     override fun saveProgramConfig() {
         try {
             programConfig.p = false
-            programConfigViewModel.configState.value = programConfig.copy( p = true )  // 更新 UI
+            programConfigViewModel.configState.value = programConfig.copy( p = true )  // Update UI
         }
         catch (e: RuntimeException) {
             Log.d(TAG, e.toString())

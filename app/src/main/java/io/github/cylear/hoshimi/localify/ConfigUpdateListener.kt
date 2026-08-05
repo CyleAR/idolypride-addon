@@ -543,7 +543,7 @@ override fun onUnlockAllLiveCostumeChanged(value: Boolean) {
 
     override fun onBClickPresetChanged(index: Int) {
         val setData: FloatArray = when (index) {
-            // 0.33, 0.08, 0.7, 0.12, 0.25, 0.2, 0.8, 0, noUseArm 啥玩意
+            // 0.33, 0.08, 0.7, 0.12, 0.25, 0.2, 0.8, 0, noUseArm
             0 -> floatArrayOf(0.33f, 0.07f, 0.7f, 0.06f, 0.25f, 0.2f, 0.5f,
                 1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f)
             1 -> floatArrayOf(0.365f, 0.06f, 0.62f, 0.07f, 0.25f, 0.2f, 0.5f,

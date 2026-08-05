@@ -375,7 +375,7 @@ namespace HoshimiLocal::Local {
                 return SplitTagsTranslationStat::NO_SPLIT_AND_EMPTY;
             }
             else {
-                if (!(!origText.empty() && splitFlags.contains(origText[0]))) {  // 开头为特殊符号或数字
+                if (!(!origText.empty() && splitFlags.contains(origText[0]))) {  // Starts with special symbol or digit
                     return SplitTagsTranslationStat::NO_SPLIT;
                 }
             }

@@ -1392,7 +1392,7 @@ namespace HoshimiLocal::HookMain {
         }
     }
 
-    // Legacy UnityEngine.UI.Text hook（礼物/邮件等非TMP界面）
+    // Legacy UnityEngine.UI.Text hook (non-TMP UI such as gifts/mail)
     DEFINE_HOOK(void, UIText_set_text, (void* self, Il2cppString* value)) {
         if (!value) {
             return UIText_set_text_Orig(self, value);
@@ -1419,12 +1419,12 @@ namespace HoshimiLocal::HookMain {
         if (charArray && start >= 0 && count > 0) {
             // IL2CPP char[] elements are uint16_t (UTF-16)
             auto arr = reinterpret_cast<UnityResolve::UnityType::Array<uint16_t>*>(charArray);
-            // 边界检查：确保 start+count 不超出数组长度
+            // Bounds check: ensure start+count does not exceed array length
             if (static_cast<uintptr_t>(start + count) <= arr->max_length) {
                 auto rawData = arr->GetData();
                 if (rawData) {
-                    // rawData 是 uintptr_t（字节地址），每个 char16_t 占 2 字节
-                    // 必须用 start * sizeof(char16_t) 而非直接 + start（否则偏移量减半）
+                    // rawData is uintptr_t (byte address), each char16_t takes 2 bytes
+                    // Must use start * sizeof(char16_t) instead of + start (otherwise offset is halved)
                     const std::u16string u16(
                         reinterpret_cast<const char16_t*>(rawData + static_cast<uintptr_t>(start) * sizeof(char16_t)),
                         static_cast<size_t>(count));
@@ -1475,14 +1475,14 @@ namespace HoshimiLocal::HookMain {
         TextField_set_value_Orig(self, value);
     }
 
-    // 未使用的 Hook
+    // Unused Hook
     DEFINE_HOOK(void, EffectGroup_ctor, (void* self, void* mtd)) {
         // auto self_klass = Il2cppUtils::get_class_from_instance(self);
         // Log::DebugFmt("EffectGroup_ctor: self: %s::%s", self_klass->namespaze, self_klass->name);
         EffectGroup_ctor_Orig(self, mtd);
     }
 
-    // 用于本地化 MasterDB
+    // Used for MasterDB localization
     DEFINE_HOOK(void, MessageExtensions_MergeFrom, (void* message, void* span, void* mtd)) {
         MessageExtensions_MergeFrom_Orig(message, span, mtd);
         if (message) {
@@ -4603,8 +4603,8 @@ namespace HoshimiLocal::HookMain {
 
         ADD_HOOK(TMP_Text_SetCharArray, Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
             "TMP_Text", "SetCharArray", {"System.Char[]", "System.Int32", "System.Int32"}));
-        /* SQL 查询相关函数，不好用
-        // 下面是 byte[] u8 string 转 std::string 的例子
+        /* SQL query functions, not recommended
+        // Example of converting byte[] u8 string to std::string below
         auto query = reinterpret_cast<UnityResolve::UnityType::Array<UnityResolve::UnityType::Byte>*>(mtd);
         auto data_ptr = reinterpret_cast<std::uint8_t*>(query->GetData());
         std::string qS(data_ptr, data_ptr + lastLength);
@@ -5039,7 +5039,7 @@ namespace HoshimiLocal::HookMain {
                  Il2cppUtils::GetMethodPointer("UnityEngine.AudioModule.dll", "UnityEngine", "AudioSource", "PlayOneShot", {"UnityEngine.AudioClip", "System.Single"}));
         ADD_HOOK(AudioSource_set_clip,
                  Il2cppUtils::GetMethodPointer("UnityEngine.AudioModule.dll", "UnityEngine", "AudioSource", "set_clip"));
-        // 双端
+        // Dual platform
         ADD_HOOK(InternalSetOrientationAsync,
             Il2cppUtils::GetMethodPointer("solis-submodule.Runtime.dll", "Solis.Common",
                 "ScreenOrientationControllerBase", "InternalSetOrientationAsync"));

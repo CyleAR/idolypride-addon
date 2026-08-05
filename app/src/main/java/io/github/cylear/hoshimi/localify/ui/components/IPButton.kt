@@ -31,10 +31,10 @@ fun IPButton(
     onClick: () -> Unit,
     text: String,
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(50.dp), // 用于实现左右两边的半圆角
-    shadowElevation: Dp = 8.dp, // 阴影的高度
-    borderWidth: Dp = 1.dp, // 描边的宽度
-    borderColor: Color = Color.Transparent, // 描边的颜色
+    shape: Shape = RoundedCornerShape(50.dp), // Rounded corners on left and right
+    shadowElevation: Dp = 8.dp, // Shadow elevation
+    borderWidth: Dp = 1.dp, // Border width
+    borderColor: Color = Color.Transparent, // Border color
     enabled: Boolean = true,
     bgColors: List<Color>? = null,
     textColor: Color? = null
@@ -47,7 +47,7 @@ fun IPButton(
                 ?: if (enabled) listOf(Color(0xFF1428FF), Color(0xFF5335FA)) else
                     listOf(Color(0xFFF9F9F9), Color(0xFFF0F0F0)),
             start = Offset(0f, 0f),
-            end = Offset(buttonSize.width.toFloat(), buttonSize.height.toFloat()) // 动态终点
+            end = Offset(buttonSize.width.toFloat(), buttonSize.height.toFloat()) // Dynamic end point
         )
     }
 

@@ -6,7 +6,7 @@
 
 #ifndef UNITYRESOLVE_HPP
 #define UNITYRESOLVE_HPP
-#define WINDOWS_MODE 0 // 如果需要请改为 1 | 1 if you need
+#define WINDOWS_MODE 0 // Change to 1 if needed
 #define ANDROID_MODE 1
 #define LINUX_MODE 0
  /* Never
@@ -156,12 +156,12 @@ public:
 			return objType;
 		}
 
-		/**
-		 * \brief 获取类所有实例
-		 * \tparam T 返回数组类型
-		 * \param type 类
-		 * \return 返回实例指针数组
-		 */
+    /**
+     * \brief Get all class instances
+     * \tparam T Return array type
+     * \param type Class
+     * \return Return array of instance pointers
+     */
 		template <typename T>
 		auto FindObjectsByType() -> std::vector<T> {
 			static Method* pMethod;
@@ -319,7 +319,7 @@ public:
 			ForeachAssembly();
 
 			if (Get("UnityEngine.dll") && (!Get("UnityEngine.CoreModule.dll") || !Get("UnityEngine.PhysicsModule.dll"))) {
-				// 兼容某些游戏 (如生死狙击2)
+				    // Compatibility for certain games (e.g. Final Combat 2)
 				for (const std::vector<std::string> names = { "UnityEngine.CoreModule.dll", "UnityEngine.PhysicsModule.dll" }; const auto name : names) {
 					const auto ass = Get("UnityEngine.dll");
 					const auto assembly = new Assembly{ .address = ass->address, .name = name, .file = ass->file, .classes = ass->classes };
@@ -531,20 +531,20 @@ public:
 	}
 #endif
 
-	/**
-	 * \brief 调用dll函数
-	 * \tparam Return 返回类型 (必须)
-	 * \tparam Args 参数类型 (可以忽略)
-	 * \param funcName dll导出函数名称
-	 * \param args 参数
-	 * \return 模板类型
-	 */
+    /**
+     * \brief Call DLL function
+     * \tparam Return Return type (required)
+     * \tparam Args Parameter types (optional)
+     * \param funcName DLL exported function name
+     * \param args Arguments
+     * \return Template type
+     */
 	template <typename Return, typename... Args>
 	static auto Invoke(const std::string& funcName, Args... args) -> Return {
 		static std::mutex mutex{};
 		std::lock_guard   lock(mutex);
 
-		// 检查函数是否已经获取地址, 没有则自动获取
+		    // Check if function address is fetched, fetch automatically if not
 #if WINDOWS_MODE
 		if (!address_.contains(funcName) || !address_[funcName]) address_[funcName] = static_cast<void*>(GetProcAddress(static_cast<HMODULE>(hmodule_), funcName.c_str()));
 #elif  ANDROID_MODE || LINUX_MODE
@@ -580,7 +580,7 @@ public:
 
 private:
 	static auto ForeachAssembly() -> void {
-		// 遍历程序集
+		// Iterate assemblies
 		if (mode_ == Mode::Il2Cpp) {
 			size_t     nrofassemblies = 0;
 			const auto assemblies = Invoke<void**>("il2cpp_domain_get_assemblies", pDomain, &nrofassemblies);
@@ -667,7 +667,7 @@ private:
     }
 
 	static auto ForeachClass(Assembly* assembly, void* image) -> void {
-		// 遍历类
+		// Iterate classes
 		if (mode_ == Mode::Il2Cpp) {
 			const auto count = Invoke<int>("il2cpp_image_get_class_count", image);
             if (!lazyInit_) UnityResolveProgress::classProgress.total = count;
@@ -726,7 +726,7 @@ private:
 	}
 
 	static auto ForeachFields(Class* klass, void* pKlass) -> void {
-		// 遍历成员
+		// Iterate fields
 		if (mode_ == Mode::Il2Cpp) {
 			void* iter = nullptr;
 			void* field;
@@ -758,7 +758,7 @@ private:
 	}
 
 	static auto ForeachMethod(Class* klass, void* pKlass) -> void {
-		// 遍历方法
+		// Iterate methods
 		if (mode_ == Mode::Il2Cpp) {
 			void* iter = nullptr;
 			void* method;

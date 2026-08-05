@@ -81,7 +81,7 @@ fun IPGroupConfirm(
     val scoop = rememberCoroutineScope()
     var isVisible by remember { mutableStateOf(initIsVisible) }
     val offsetY by animateFloatAsState(
-        targetValue = if (isVisible) -35f else contentHeightForAnimation, // 控制Box移动的距离
+        targetValue = if (isVisible) -35f else contentHeightForAnimation, // Control Box movement distance
         animationSpec = tween(durationMillis = ANIMATION_TIME), label = "offsetY"
     )
 

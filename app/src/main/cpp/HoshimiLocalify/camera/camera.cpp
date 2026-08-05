@@ -47,7 +47,7 @@ namespace IPCamera {
 		baseCamera.reset();
 	}
 
-	void camera_forward() {  // 向前
+	void camera_forward() {  // Forward
         switch (cameraMode) {
             case CameraMode::FREE: {
                 baseCamera.set_lon_move(0, LonMoveHState::LonMoveForward);
@@ -61,7 +61,7 @@ namespace IPCamera {
         }
 
 	}
-	void camera_back(float multiplier = 1.0f) {  // 后退
+	void camera_back(float multiplier = 1.0f) {  // Backward
         switch (cameraMode) {
             case CameraMode::FREE: {
                 baseCamera.set_lon_move(180, LonMoveHState::LonMoveBack, multiplier);
@@ -74,7 +74,7 @@ namespace IPCamera {
             }
         }
 	}
-	void camera_left() {  // 向左
+	void camera_left() {  // Left
         switch (cameraMode) {
             case CameraMode::FREE: {
                 baseCamera.set_lon_move(90);
@@ -88,7 +88,7 @@ namespace IPCamera {
         }
 
 	}
-	void camera_right(float multiplier = 1.0f) {  // 向右
+	void camera_right(float multiplier = 1.0f) {  // Right
         switch (cameraMode) {
             case CameraMode::FREE: {
                 baseCamera.set_lon_move(-90, LonMoveLeftAndRight, multiplier);
@@ -102,7 +102,7 @@ namespace IPCamera {
         }
 	}
 
-	void camera_down(float multiplier = 1.0f) {  // 向下
+	void camera_down(float multiplier = 1.0f) {  // Down
         switch (cameraMode) {
             case CameraMode::FREE: {
                 float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel * multiplier;
@@ -123,7 +123,7 @@ namespace IPCamera {
         }
 	}
 
-	void camera_up(float multiplier = 1.0f) {  // 向上
+	void camera_up(float multiplier = 1.0f) {  // Up
         switch (cameraMode) {
             case CameraMode::FREE: {
                 float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel * multiplier;
@@ -389,7 +389,7 @@ namespace IPCamera {
 
     UnityResolve::UnityType::Vector3 CalcPositionFromLookAt(const UnityResolve::UnityType::Vector3& target,
                                                             const UnityResolve::UnityType::Vector3& offset) {
-        // offset: z 远近, y 高低, x角度
+        // offset: z distance, y height, x angle
         const float angleX = offset.x;
         const float distanceZ = offset.z;
         const float angleRad = angleX * (M_PI / 180.0f);
@@ -451,16 +451,16 @@ namespace IPCamera {
                                                              const UnityResolve::UnityType::Vector3& offset) {
         using Vector3 = UnityResolve::UnityType::Vector3;
 
-        // 计算角色的右方向
-        Vector3 up(0, 1, 0); // Y轴方向
+        // Calculate character right direction
+        Vector3 up(0, 1, 0); // Y axis direction
         Vector3 right = forward.cross(up).Normalize();
         Vector3 fwd = forward;
         Vector3 pos = position;
 
-        // 计算角色的左方向
+        // Calculate character left direction
         Vector3 left = right * -1.0f;
 
-        // 计算最终位置
+        // Calculate final position
         Vector3 backwardOffset = fwd * -offset.z;
         Vector3 leftOffset = left * offset.x;
 
@@ -513,23 +513,23 @@ namespace IPCamera {
 		bool threadRunning = false;
 
 		void resetAll() {
-            // 获取当前对象的指针并转换为 unsigned char* 类型
+            // Get current object pointer and convert to unsigned char* type
             unsigned char* p = reinterpret_cast<unsigned char*>(this);
 
-            // 遍历对象的每个字节
+            // Iterate through each byte of the object
             for (size_t offset = 0; offset < sizeof(*this); ) {
                 if (offset + sizeof(bool) <= sizeof(*this) && reinterpret_cast<bool*>(p + offset) == reinterpret_cast<bool*>(this) + offset / sizeof(bool)) {
-                    // 如果当前偏移量适用于 bool 类型，则将其设置为 false
+                    // If current offset applies to bool type, set to false
                     *reinterpret_cast<bool*>(p + offset) = false;
                     offset += sizeof(bool);
                 } else if (offset + sizeof(float) <= sizeof(*this) && reinterpret_cast<float*>(p + offset) == reinterpret_cast<float*>(this) + offset / sizeof(float)) {
-                    // 如果当前偏移量适用于 float 类型，则将其设置为 0.0
+                    // If current offset applies to float type, set to 0.0
                     *reinterpret_cast<float*>(p + offset) = 0.0f;
                     offset += sizeof(float);
                 } else {
-                    // 处理未定义的情况（例如混合类型数组或其他类型成员）
-                    // 可以根据实际情况调整逻辑或添加更多类型检查
-                    offset += 1; // 跳过一个字节
+                    // Handle undefined cases (e.g. mixed type arrays or other members)
+                    // Adjust logic or add type checks as needed
+                    offset += 1; // Skip one byte
                 }
             }
 		}
@@ -559,28 +559,28 @@ namespace IPCamera {
 				if (cameraMoveState.k) ChangeLiveFollowCameraOffsetY(-offsetMoveStep);
 				if (cameraMoveState.j) ChangeLiveFollowCameraOffsetX(0.8);
 				if (cameraMoveState.l) ChangeLiveFollowCameraOffsetX(-0.8);
-                // 手柄操作响应
-                // 左摇杆
+                // Controller input response
+                // Left stick
                 if (std::abs(cameraMoveState.thumb_l_right) > 0.1f)
                     JLThumbRight(cameraMoveState.thumb_l_right);
                 if (std::abs(cameraMoveState.thumb_l_down) > 0.1f)
                     JLThumbDown(cameraMoveState.thumb_l_down);
-                // 右摇杆
+                // Right stick
                 if (std::abs(cameraMoveState.thumb_r_right) > 0.1f)
                     JRThumbRight(cameraMoveState.thumb_r_right);
                 if (std::abs(cameraMoveState.thumb_r_down) > 0.1f)
                     JRThumbDown(cameraMoveState.thumb_r_down);
-                // 左扳机
+                // Left trigger
                 if (std::abs(cameraMoveState.lt_button) > 0.1f)
                     camera_down(cameraMoveState.lt_button * l_sensitivity * baseCamera.fov / 60);
-                // 右扳机
+                // Right trigger
                 if (std::abs(cameraMoveState.rt_button) > 0.1f)
                     camera_up(cameraMoveState.rt_button * l_sensitivity * baseCamera.fov / 60);
-                // 左肩键
+                // Left shoulder button
                 if (cameraMoveState.lb_button) changeCameraFOV(0.5f * r_sensitivity);
-                // 右肩键
+                // Right shoulder button
                 if (cameraMoveState.rb_button) changeCameraFOV(-0.5f * r_sensitivity);
-                // 十字键
+                // D-Pad
                 if (cameraMoveState.dpad_up) JDadUp();
 //                if (cameraMoveState.dpad_down) JDadDown();
                 if (cameraMoveState.dpad_left) JDadLeft();
@@ -646,7 +646,7 @@ namespace IPCamera {
 			} break;
             case KEY_F: if (message == WM_KEYDOWN) SwitchCameraMode(); break;
             case KEY_V: if (message == WM_KEYDOWN) SwitchCameraSubMode(); break;
-                // 手柄操作响应
+                // Controller input response
                 case BTN_A:
                     cameraMoveState.a_button = message == WM_KEYDOWN;
                     if (message == WM_KEYDOWN) JAKeyDown();
