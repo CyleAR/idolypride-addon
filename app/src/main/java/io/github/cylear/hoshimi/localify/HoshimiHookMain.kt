@@ -349,15 +349,39 @@ class HoshimiHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 val latestVersion = release.tag_name.trim()
                 Log.i(TAG, "Translation update check: installed=$installedVersion latest=$latestVersion")
                 if (latestVersion.isNotEmpty() && latestVersion != installedVersion) {
-                    val msg = when (getCurrentLanguage(activity)) {
-                        "zh" -> "检测到新翻译。请在翻译 APP 中执行 API 更新。"
-                        "en" -> "New translation found. Please run API update in the translation app."
-                        else -> "신규 번역이 있습니다. 한패 앱에서 API 업데이트를 실행해 주세요."
+                    activity.runOnUiThread {
+                        showTranslationUpdateDialog(activity, installedVersion, latestVersion)
                     }
-                    showToast(msg)
                 }
             }
         )
+    }
+
+    private fun showTranslationUpdateDialog(activity: Activity, installedVersion: String, latestVersion: String) {
+        val lang = getCurrentLanguage(activity)
+        val title = when (lang) {
+            "ko" -> "번역 업데이트 알림"
+            "zh" -> "翻译更新提示"
+            else -> "Translation Update"
+        }
+        val message = when (lang) {
+            "ko" -> "신규 번역 데이터가 있습니다.\n\n현재 버전: $installedVersion\n최신 버전: $latestVersion\n\nHoshimi Localify 앱에서 'API를 통해 리소스 업데이트 확인' 메뉴를 통해 업데이트를 실행해 주세요."
+            "zh" -> "检测到新版本的翻译数据。\n\n当前版本: $installedVersion\n最新版本: $latestVersion\n\n请在 Hoshimi Localify 应用中通过“通过 API 检查资源更新”菜单执行更新。"
+            else -> "New translation data is available.\n\nInstalled version: $installedVersion\nLatest version: $latestVersion\n\nPlease update via 'Check Resource Update From API' in the Hoshimi Localify app."
+        }
+        val okButton = when (lang) {
+            "ko" -> "확인"
+            "zh" -> "确定"
+            else -> "OK"
+        }
+
+        AlertDialog.Builder(activity)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(okButton) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun initStandaloneConfig(context: Context) {
